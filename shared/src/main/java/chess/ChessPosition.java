@@ -14,7 +14,7 @@ public class ChessPosition {
 
     @Override
     public String toString() {
-        return "ChessPosition: "+row+ ", "+col;
+        return "["+row+ ", "+col+"]";
     }
 
     @Override
