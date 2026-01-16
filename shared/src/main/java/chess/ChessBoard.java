@@ -13,10 +13,7 @@ import static chess.ChessGame.TeamColor.*;
  */
 public class ChessBoard {
 
-    private ChessPiece[][] board;
-    public ChessBoard() {
-        this.board = new ChessPiece[8][8];
-    }
+    ChessPiece[][] board = new ChessPiece[8][8];;
 
     @Override
     public boolean equals(Object o) {
@@ -32,6 +29,16 @@ public class ChessBoard {
         return Arrays.deepHashCode(board);
     }
 
+    @Override
+    public String toString() {
+        return "ChessBoard{" +
+                "board=" + Arrays.toString(board) +
+                '}';
+    }
+
+    public ChessBoard() {
+    }
+
     /**
      * Adds a chess piece to the chessboard
      *
@@ -39,7 +46,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        this.board[position.getRow() - 1][position.getColumn() - 1] = piece;
+        board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -50,12 +57,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        if(board[position.getRow() - 1][position.getColumn() - 1] != null){
-            return board[position.getRow() - 1][position.getColumn() - 1];
-        }
-        else{
-            return null;
-        }
+        return board[position.getRow() - 1][position.getColumn() - 1];
     }
 
     /**
