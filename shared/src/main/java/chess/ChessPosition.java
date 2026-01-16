@@ -13,6 +13,11 @@ public class ChessPosition {
     private final int col;
 
     @Override
+    public String toString() {
+        return "ChessPosition: "+row+ ", "+col;
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if(this == obj){
             return true;
