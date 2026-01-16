@@ -10,6 +10,14 @@ import java.util.Objects;
  */
 public class ChessMove {
     @Override
+    public String toString() {
+        return "ChessMove{"+ startPosition +
+                ", " + endPosition +
+                ", " + promotionPiece +
+                '}';
+    }
+
+    @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
