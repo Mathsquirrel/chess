@@ -12,13 +12,15 @@ private boolean hasMoved = false;
 int pieceRow;
 int pieceCol;
 List<ChessMove> allPossibleMoves = new ArrayList<>();
+ChessGame.TeamColor teamColor;
 
-PieceMovesCalculator(ChessBoard board, ChessPosition myPosition){
+    PieceMovesCalculator(ChessBoard board, ChessPosition myPosition){
     pieceRow = myPosition.getRow();
     pieceCol = myPosition.getColumn();
     this.board = board;
     this.myPosition = myPosition;
     piece = board.getPiece(myPosition);
+    teamColor = board.getPiece(myPosition).getTeamColor();
 
     switch(piece.getPieceType()){
         case PAWN:
@@ -44,6 +46,7 @@ public class KingMoves extends PieceMovesCalculator {
 
     KingMoves(ChessBoard board, ChessPosition myPosition) {
         super(board, myPosition);
+        kingMoves();
     }
 
     private void kingMoves() {
@@ -72,7 +75,83 @@ public class KingMoves extends PieceMovesCalculator {
             allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol + 1), piece.getPieceType()));
         }
     }
+
+    private void diagonalMoves(ChessBoard board, ChessPosition myPosition){
+        // Logic for moving diagonally
+
+        // Until you reach the top rank
+        for(int newRow = pieceRow; newRow < 9; newRow++){
+            // Right Diagonal Up
+            for(int newCol = pieceCol; newCol < 9; newCol++){
+                // Until you reach the far right rank
+                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+                if(board.getPiece(possibleMove).getPieceType() != null){
+                    // If you encounter a piece, stop looking that direction and add capture if needed
+                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
+                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                    }
+                    break;
+                }
+            }
+
+            // Left Diagonal Up
+            for(int newCol = pieceCol; newCol > 0; newCol--){
+                // Until you reach the far left rank
+                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+                if(board.getPiece(possibleMove).getPieceType() != null){
+                    // If you encounter a piece, stop looking that direction and add capture if needed
+                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
+                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                    }
+                    break;
+                }
+            }
+        }
+
+        // Until you reach the bottom rank
+        for(int newRow = pieceRow; newRow > 0; newRow--){
+            // Left Diagonal Down
+            for(int newCol = pieceCol; newCol > 0; newCol--){
+                // Until you reach the far left rank
+                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+                if(board.getPiece(possibleMove).getPieceType() != null){
+                    // If you encounter a piece, stop looking that direction and add capture if needed
+                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
+                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                    }
+                    break;
+                }
+            }
+
+            // Right Diagonal Down
+            for(int newCol = pieceCol; newCol < 9; newCol++){
+                // Until you reach the far right rank
+                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+                if(board.getPiece(possibleMove).getPieceType() != null){
+                    // If you encounter a piece, stop looking that direction and add capture if needed
+                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
+                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                    }
+                    break;
+                }
+            }
+        }
+    }
 }
+
+    public class BishopMoves extends PieceMovesCalculator {
+
+        BishopMoves(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+            bishopMoves();
+        }
+
+        private void bishopMoves() {
+
+        }
+}
+
+
 /**
    REMEMBER THAT PAWN LOGIC CHANGES BASED ON COLOR. CHECK COLOR AND THEN ASSIGN VARIABLE TO NUMBER BASED ON COLOR AND APPLY THAT VARIABLE
    TO ALL CHECKS. Ex: White = 1, Black = -1. finalPosition = currentPosition(x + COLOR, COL) so that check logic doesn't care about color
