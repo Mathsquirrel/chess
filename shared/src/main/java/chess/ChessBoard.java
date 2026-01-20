@@ -13,8 +13,6 @@ import static chess.ChessGame.TeamColor.*;
  */
 public class ChessBoard {
 
-    ChessPiece[][] board = new ChessPiece[8][8];;
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
@@ -36,7 +34,9 @@ public class ChessBoard {
                 '}';
     }
 
+    private ChessPiece[][] board;
     public ChessBoard() {
+        board = new ChessPiece[8][8];
     }
 
     /**
