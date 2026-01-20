@@ -75,8 +75,10 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         PieceType type = board.getPiece(myPosition).getPieceType();
-        PieceMovesCalculator allMoves = new PieceMovesCalculator(board, myPosition);
-        return allMoves.getAllPossibleMoves();
+        List<ChessMove> allMoves = new PieceMovesCalculator(board, myPosition).getAllPossibleMoves();
+        // IF any of the movements in the array would have a piece move where there is a friendly piece, remove them
+        allMoves.removeIf(move -> board.getPiece(move.getEndPosition()).getTeamColor() == board.getPiece(myPosition).getTeamColor());
+        return allMoves;
     }
 }
 

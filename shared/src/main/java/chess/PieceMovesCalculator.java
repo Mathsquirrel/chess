@@ -4,8 +4,6 @@ import chess.ChessPiece.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static chess.ChessPiece.PieceType.*;
-
 public class PieceMovesCalculator{
 private final ChessBoard board;
 private final ChessPosition myPosition;
@@ -26,15 +24,15 @@ PieceMovesCalculator(ChessBoard board, ChessPosition myPosition){
         case PAWN:
             // PawnMoves allMoves = new PawnMoves(board, myPosition);
         case KNIGHT:
-            // KnightMoves allMoves = new PawnMoves(board, myPosition);
+            // KnightMoves allMoves = new KnightMoves(board, myPosition);
         case BISHOP:
-            // BishopMoves allMoves = new PawnMoves(board, myPosition);
+            // BishopMoves allMoves = new BishopMoves(board, myPosition);
         case ROOK:
-            // RookMoves allMoves = new PawnMoves(board, myPosition);
+            // RookMoves allMoves = new RookMoves(board, myPosition);
         case QUEEN:
-            // QueenMoves allMoves = new PawnMoves(board, myPosition);
+            // QueenMoves allMoves = new QueenMoves(board, myPosition);
         case KING:
-            // KingMoves allMoves = new PawnMoves(board, myPosition);
+            KingMoves allMoves = new KingMoves(board, myPosition);
     }
 }
 
