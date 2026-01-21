@@ -89,14 +89,13 @@ public class ChessPiece {
             BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
             allMoves.addAll(allBishopMoves.getAllPossibleMoves());
         }else if(type == PieceType.KNIGHT){
-            // KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
-            // allMoves.addAll(allKnightMoves.getAllPossibleMoves());
+            KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
+            allMoves.addAll(allKnightMoves.getAllPossibleMoves());
         }else if(type == PieceType.PAWN){
             // PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
             // allMoves.addAll(allPawnMoves.getAllPossibleMoves());
         }
         return allMoves;
-        // IF any of the movements in the array would have a piece move where there is a friendly piece, remove them
     }
 }
 
