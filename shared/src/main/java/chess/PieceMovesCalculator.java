@@ -35,18 +35,17 @@ public static class KingMoves extends PieceMovesCalculator {
     }
 
     private void kingMoves() {
-        // IF move is not out of bounds and IF piece of same color already there, then can move
-
-        // Put second if inside to check if spot is clear
+        // All possible variations of movement
         int[] allRowVariations = {-1, -1, -1, 0, 0, 1, 1, 1};
         int[] allColVariations = {1, 0, -1, 1, -1, 1, 0, -1};
         for (int i = 0; i < allRowVariations.length; i++) {
             int possibleRow = myPosition.getRow() + allRowVariations[i];
             int possibleCol = myPosition.getColumn() + allColVariations[i];
             if (possibleRow < 1 || possibleRow > 8 || possibleCol < 1 || possibleCol > 8) {
-
+                // If the movement will go out of bounds, don't try it
             } else if (board.getPiece(new ChessPosition(possibleRow, possibleCol)) != null) {
                 if (board.getPiece(new ChessPosition(possibleRow, possibleCol)).getTeamColor() != teamColor) {
+                    // If the movement does not end on a friendly piece's space, add as option
                     allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
                 }
             } else {
@@ -57,63 +56,87 @@ public static class KingMoves extends PieceMovesCalculator {
 }
 
 public void diagonalMoves(ChessBoard board, ChessPosition myPosition) {
-    // Logic for moving diagonally
-
-    // Until you reach the top rank
-    for (int newRow = pieceRow; newRow < 8; newRow++) {
-        // Right Diagonal Up
-        for (int newCol = pieceCol; newCol < 8; newCol++) {
-            // Until you reach the far right rank
-            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-            if (board.getPiece(possibleMove).getPieceType() != null) {
-                // If you encounter a piece, stop looking that direction and add capture if needed
-                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
-                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                }
-                break;
-            }
-        }
-
-        // Left Diagonal Up
-        for (int newCol = pieceCol; newCol > 0; newCol--) {
-            // Until you reach the far left rank
-            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-            if (board.getPiece(possibleMove).getPieceType() != null) {
-                // If you encounter a piece, stop looking that direction and add capture if needed
-                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
-                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                }
-                break;
-            }
+    // Logic for Diagonal up right
+    int testingRow = pieceRow;
+    int testingCol = pieceCol;
+    while(testingRow < 8 && testingCol < 8){
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow + 1, testingCol + 1);
+        if(board.getPiece(testingPosition) == null){
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol + 1), null));
+            testingRow++;
+            testingCol++;
+        }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol + 1), null));
+            break;
+        }else{
+            // Friendly piece blocking, break
+            break;
         }
     }
 
-    // Until you reach the bottom rank
-    for (int newRow = pieceRow; newRow > 0; newRow--) {
-        // Left Diagonal Down
-        for (int newCol = pieceCol; newCol > 0; newCol--) {
-            // Until you reach the far left rank
-            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-            if (board.getPiece(possibleMove).getPieceType() != null) {
-                // If you encounter a piece, stop looking that direction and add capture if needed
-                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
-                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                }
-                break;
-            }
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    // Logic for Diagonal Up left
+    while(testingRow < 8 && testingCol > 1){
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow + 1, testingCol - 1);
+        if(board.getPiece(testingPosition) == null){
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol - 1), null));
+            testingRow++;
+            testingCol--;
+        }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol - 1), null));
+            break;
+        }else{
+            // Friendly piece blocking, break
+            break;
         }
+    }
 
-        // Right Diagonal Down
-        for (int newCol = pieceCol; newCol < 8; newCol++) {
-            // Until you reach the far right rank
-            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-            if (board.getPiece(possibleMove).getPieceType() != null) {
-                // If you encounter a piece, stop looking that direction and add capture if needed
-                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
-                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                }
-                break;
-            }
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    // Logic for Diagonal Down Right
+    while(testingRow > 1 && testingCol < 8){
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow - 1, testingCol + 1);
+        if(board.getPiece(testingPosition) == null){
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol + 1), null));
+            testingRow--;
+            testingCol++;
+        }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol + 1), null));
+            break;
+        }else{
+            // Friendly piece blocking, break
+            break;
+        }
+    }
+
+    // Logic for Diagonal Down Left
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    while(testingRow > 1 && testingCol > 1){
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow - 1, testingCol - 1);
+        if(board.getPiece(testingPosition) == null){
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol - 1), null));
+            testingRow--;
+            testingCol--;
+        }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol - 1), null));
+            break;
+        }else{
+            // Friendly piece blocking, break
+            break;
         }
     }
 }

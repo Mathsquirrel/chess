@@ -81,19 +81,19 @@ public class ChessPiece {
             allMoves.addAll(allKingMoves.getAllPossibleMoves());
         }else if(type == PieceType.QUEEN){
             // QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
-            //return allQueenMoves.getAllPossibleMoves();
+            // allMoves.addAll(allQueenMoves.getAllPossibleMoves());
         }else if(type == PieceType.ROOK){
             // RookMoves allRookMoves = new RookMoves(board, myPosition);
-            //return allRookMoves.getAllPossibleMoves();
+            // allMoves.addAll(allRookMoves.getAllPossibleMoves());
         }else if(type == PieceType.BISHOP){
             BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
-            return allBishopMoves.getAllPossibleMoves();
+            allMoves.addAll(allBishopMoves.getAllPossibleMoves());
         }else if(type == PieceType.KNIGHT){
-            //KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
-            //return allKnightMoves.getAllPossibleMoves();
+            // KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
+            // allMoves.addAll(allKnightMoves.getAllPossibleMoves());
         }else if(type == PieceType.PAWN){
-            //PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
-            //return allPawnMoves.getAllPossibleMoves();
+            // PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
+            // allMoves.addAll(allPawnMoves.getAllPossibleMoves());
         }
         return allMoves;
         // IF any of the movements in the array would have a piece move where there is a friendly piece, remove them
