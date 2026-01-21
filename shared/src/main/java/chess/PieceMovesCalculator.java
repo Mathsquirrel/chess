@@ -4,53 +4,129 @@ import chess.ChessPiece.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PieceMovesCalculator{
-private static ChessBoard board = new ChessBoard();
-private static ChessPosition myPosition = null;
-private static ChessPiece piece;
-private boolean hasMoved = false;
-int pieceRow;
-int pieceCol;
-List<ChessMove> allPossibleMoves = new ArrayList<>();
-ChessGame.TeamColor teamColor;
+public class PieceMovesCalculator {
+    private static ChessBoard board = new ChessBoard();
+    private static ChessPosition myPosition = null;
+    private static ChessPiece piece;
+    private boolean hasMoved = false;
+    int pieceRow;
+    int pieceCol;
+    List<ChessMove> allPossibleMoves = new ArrayList<>();
+    ChessGame.TeamColor teamColor;
 
-    PieceMovesCalculator(ChessBoard board, ChessPosition myPosition){
-    pieceRow = myPosition.getRow();
-    pieceCol = myPosition.getColumn();
-    this.board = board;
-    this.myPosition = myPosition;
-    piece = board.getPiece(myPosition);
-    teamColor = board.getPiece(myPosition).getTeamColor();
-}
-
-public List<ChessMove> getAllPossibleMoves() {
-    return allPossibleMoves;
-}
-
-public static class KingMoves extends PieceMovesCalculator {
-
-    KingMoves(ChessBoard board, ChessPosition myPosition) {
-        super(board, myPosition);
-        kingMoves();
+    PieceMovesCalculator(ChessBoard board, ChessPosition myPosition) {
+        pieceRow = myPosition.getRow();
+        pieceCol = myPosition.getColumn();
+        this.board = board;
+        this.myPosition = myPosition;
+        piece = board.getPiece(myPosition);
+        teamColor = board.getPiece(myPosition).getTeamColor();
     }
 
-    private void kingMoves() {
-        // All possible variations of movement
-        int[] allRowVariations = {-1, -1, -1, 0, 0, 1, 1, 1};
-        int[] allColVariations = {1, 0, -1, 1, -1, 1, 0, -1};
-        for (int i = 0; i < allRowVariations.length; i++) {
-            int possibleRow = myPosition.getRow() + allRowVariations[i];
-            int possibleCol = myPosition.getColumn() + allColVariations[i];
-            if (possibleRow < 1 || possibleRow > 8 || possibleCol < 1 || possibleCol > 8) {
-                // If the movement will go out of bounds, don't try it
-            } else if (board.getPiece(new ChessPosition(possibleRow, possibleCol)) != null) {
-                if (board.getPiece(new ChessPosition(possibleRow, possibleCol)).getTeamColor() != teamColor) {
-                    // If the movement does not end on a friendly piece's space, add as option
+    public List<ChessMove> getAllPossibleMoves() {
+        return allPossibleMoves;
+    }
+
+    public static class KingMoves extends PieceMovesCalculator {
+
+        KingMoves(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+            kingMoves();
+        }
+
+        private void kingMoves() {
+            // All possible variations of movement
+            int[] allRowVariations = {-1, -1, -1, 0, 0, 1, 1, 1};
+            int[] allColVariations = {1, 0, -1, 1, -1, 1, 0, -1};
+            for (int i = 0; i < allRowVariations.length; i++) {
+                int possibleRow = myPosition.getRow() + allRowVariations[i];
+                int possibleCol = myPosition.getColumn() + allColVariations[i];
+                if (possibleRow < 1 || possibleRow > 8 || possibleCol < 1 || possibleCol > 8) {
+                    // If the movement will go out of bounds, don't try it
+                } else if (board.getPiece(new ChessPosition(possibleRow, possibleCol)) != null) {
+                    if (board.getPiece(new ChessPosition(possibleRow, possibleCol)).getTeamColor() != teamColor) {
+                        // If the movement does not end on a friendly piece's space, add as option
+                        allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
+                    }
+                } else {
                     allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
                 }
-            } else {
-                allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
             }
+        }
+    }
+
+public void orthogonalMoves(ChessBoard board, ChessPosition myPosition) {
+
+    int testingRow = pieceRow;
+    int testingCol = pieceCol;
+    while (testingRow < 8) {
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow + 1, testingCol);
+        if (board.getPiece(testingPosition) == null) {
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol), null));
+            testingRow++;
+        } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol), null));
+            break;
+        } else {
+            // Friendly piece blocking, break
+            break;
+        }
+    }
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    while (testingRow > 1) {
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow - 1, testingCol);
+        if (board.getPiece(testingPosition) == null) {
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol), null));
+            testingRow--;
+        } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol), null));
+            break;
+        } else {
+            // Friendly piece blocking, break
+            break;
+        }
+    }
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    while (testingCol > 1) {
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow, testingCol - 1);
+        if (board.getPiece(testingPosition) == null) {
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow, testingCol - 1), null));
+            testingCol--;
+        } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow, testingCol - 1), null));
+            break;
+        } else {
+            // Friendly piece blocking, break
+            break;
+        }
+    }
+    testingRow = pieceRow;
+    testingCol = pieceCol;
+    while (testingCol < 8) {
+        // Test diagonal up right movement
+        ChessPosition testingPosition = new ChessPosition(testingRow, testingCol + 1);
+        if (board.getPiece(testingPosition) == null) {
+            // While squares are empty, add possible movement
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow, testingCol + 1), null));
+            testingCol++;
+        } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
+            // If enemy blocking, add move but break from loop
+            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow, testingCol + 1), null));
+            break;
+        } else {
+            // Friendly piece blocking, break
+            break;
         }
     }
 }
@@ -141,6 +217,29 @@ public void diagonalMoves(ChessBoard board, ChessPosition myPosition) {
     }
 }
 
+public static class QueenMoves extends PieceMovesCalculator {
+
+    QueenMoves(ChessBoard board, ChessPosition myPosition) {
+        super(board, myPosition);
+        queenMoves();
+    }
+
+    private void queenMoves() {
+        orthogonalMoves(board, myPosition);
+        diagonalMoves(board, myPosition);
+    }
+}
+public static class RookMoves extends PieceMovesCalculator {
+
+    RookMoves(ChessBoard board, ChessPosition myPosition) {
+        super(board, myPosition);
+        rookMoves();
+    }
+
+    private void rookMoves() {
+        orthogonalMoves(board, myPosition);
+    }
+}
 public static class BishopMoves extends PieceMovesCalculator {
 
     BishopMoves(ChessBoard board, ChessPosition myPosition) {

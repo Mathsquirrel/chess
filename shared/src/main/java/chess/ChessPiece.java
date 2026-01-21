@@ -80,11 +80,11 @@ public class ChessPiece {
             KingMoves allKingMoves = new KingMoves(board, myPosition);
             allMoves.addAll(allKingMoves.getAllPossibleMoves());
         }else if(type == PieceType.QUEEN){
-            // QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
-            // allMoves.addAll(allQueenMoves.getAllPossibleMoves());
+            QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
+            allMoves.addAll(allQueenMoves.getAllPossibleMoves());
         }else if(type == PieceType.ROOK){
-            // RookMoves allRookMoves = new RookMoves(board, myPosition);
-            // allMoves.addAll(allRookMoves.getAllPossibleMoves());
+            RookMoves allRookMoves = new RookMoves(board, myPosition);
+            allMoves.addAll(allRookMoves.getAllPossibleMoves());
         }else if(type == PieceType.BISHOP){
             BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
             allMoves.addAll(allBishopMoves.getAllPossibleMoves());
