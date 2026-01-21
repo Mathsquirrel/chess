@@ -4,11 +4,13 @@ import chess.ChessPiece.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static chess.ChessPiece.PieceType.*;
+
 public class PieceMovesCalculator {
     private static ChessBoard board = new ChessBoard();
     private static ChessPosition myPosition = null;
     private static ChessPiece piece;
-    private boolean hasMoved = false;
+    private static boolean notMoved = true;
     int pieceRow;
     int pieceCol;
     List<ChessMove> allPossibleMoves = new ArrayList<>();
@@ -86,7 +88,7 @@ public class PieceMovesCalculator {
     }
 
     public void orthogonalMoves(ChessBoard board, ChessPosition myPosition) {
-            // Make for loop that iterates through array like king movement and resets testing variables
+        // Make for loop that iterates through array like king movement and resets testing variables
         int testingRow = pieceRow;
         int testingCol = pieceCol;
         while (testingRow < 8) {
@@ -165,19 +167,19 @@ public class PieceMovesCalculator {
         // Logic for Diagonal up right
         int testingRow = pieceRow;
         int testingCol = pieceCol;
-        while(testingRow < 8 && testingCol < 8){
+        while (testingRow < 8 && testingCol < 8) {
             // Test diagonal up right movement
             ChessPosition testingPosition = new ChessPosition(testingRow + 1, testingCol + 1);
-            if(board.getPiece(testingPosition) == null){
+            if (board.getPiece(testingPosition) == null) {
                 // While squares are empty, add possible movement
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol + 1), null));
                 testingRow++;
                 testingCol++;
-            }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
                 // If enemy blocking, add move but break from loop
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol + 1), null));
                 break;
-            }else{
+            } else {
                 // Friendly piece blocking, break
                 break;
             }
@@ -186,19 +188,19 @@ public class PieceMovesCalculator {
         testingRow = pieceRow;
         testingCol = pieceCol;
         // Logic for Diagonal Up left
-        while(testingRow < 8 && testingCol > 1){
+        while (testingRow < 8 && testingCol > 1) {
             // Test diagonal up right movement
             ChessPosition testingPosition = new ChessPosition(testingRow + 1, testingCol - 1);
-            if(board.getPiece(testingPosition) == null){
+            if (board.getPiece(testingPosition) == null) {
                 // While squares are empty, add possible movement
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol - 1), null));
                 testingRow++;
                 testingCol--;
-            }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
                 // If enemy blocking, add move but break from loop
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow + 1, testingCol - 1), null));
                 break;
-            }else{
+            } else {
                 // Friendly piece blocking, break
                 break;
             }
@@ -207,19 +209,19 @@ public class PieceMovesCalculator {
         testingRow = pieceRow;
         testingCol = pieceCol;
         // Logic for Diagonal Down Right
-        while(testingRow > 1 && testingCol < 8){
+        while (testingRow > 1 && testingCol < 8) {
             // Test diagonal up right movement
             ChessPosition testingPosition = new ChessPosition(testingRow - 1, testingCol + 1);
-            if(board.getPiece(testingPosition) == null){
+            if (board.getPiece(testingPosition) == null) {
                 // While squares are empty, add possible movement
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol + 1), null));
                 testingRow--;
                 testingCol++;
-            }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
                 // If enemy blocking, add move but break from loop
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol + 1), null));
                 break;
-            }else{
+            } else {
                 // Friendly piece blocking, break
                 break;
             }
@@ -228,19 +230,19 @@ public class PieceMovesCalculator {
         // Logic for Diagonal Down Left
         testingRow = pieceRow;
         testingCol = pieceCol;
-        while(testingRow > 1 && testingCol > 1){
+        while (testingRow > 1 && testingCol > 1) {
             // Test diagonal up right movement
             ChessPosition testingPosition = new ChessPosition(testingRow - 1, testingCol - 1);
-            if(board.getPiece(testingPosition) == null){
+            if (board.getPiece(testingPosition) == null) {
                 // While squares are empty, add possible movement
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol - 1), null));
                 testingRow--;
                 testingCol--;
-            }else if(board.getPiece(testingPosition).getTeamColor() != teamColor){
+            } else if (board.getPiece(testingPosition).getTeamColor() != teamColor) {
                 // If enemy blocking, add move but break from loop
                 allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(testingRow - 1, testingCol - 1), null));
                 break;
-            }else{
+            } else {
                 // Friendly piece blocking, break
                 break;
             }
@@ -259,6 +261,7 @@ public class PieceMovesCalculator {
             diagonalMoves(board, myPosition);
         }
     }
+
     public static class RookMoves extends PieceMovesCalculator {
 
         RookMoves(ChessBoard board, ChessPosition myPosition) {
@@ -270,6 +273,7 @@ public class PieceMovesCalculator {
             orthogonalMoves(board, myPosition);
         }
     }
+
     public static class BishopMoves extends PieceMovesCalculator {
 
         BishopMoves(ChessBoard board, ChessPosition myPosition) {
@@ -282,61 +286,93 @@ public class PieceMovesCalculator {
         }
     }
 
+    // REMEMBER THAT PAWN LOGIC CHANGES BASED ON COLOR. CHECK COLOR AND THEN ASSIGN VARIABLE TO NUMBER BASED ON COLOR AND APPLY THAT VARIABLE
+    // TO ALL CHECKS. Ex: White = 1, Black = -1. finalPosition = currentPosition(x + COLOR, COL) so that check logic doesn't care about color
 
+    public static class PawnMoves extends PieceMovesCalculator {
 
-/**
-   REMEMBER THAT PAWN LOGIC CHANGES BASED ON COLOR. CHECK COLOR AND THEN ASSIGN VARIABLE TO NUMBER BASED ON COLOR AND APPLY THAT VARIABLE
-   TO ALL CHECKS. Ex: White = 1, Black = -1. finalPosition = currentPosition(x + COLOR, COL) so that check logic doesn't care about color
+        PawnMoves(ChessBoard board, ChessPosition myPosition) {
+            super(board, myPosition);
+            pawnMoves();
+        }
 
-   private class PawnMoves extends PieceMovesCalculator {
+        private void promotionMoves(ChessPosition currentPosition, ChessPosition finalPosition) {
+            ChessMove knightPromotion = new ChessMove(myPosition, finalPosition, KNIGHT);
+            ChessMove bishopPromotion = new ChessMove(myPosition, finalPosition, BISHOP);
+            ChessMove rookPromotion = new ChessMove(myPosition, finalPosition, ROOK);
+            ChessMove queenPromotion = new ChessMove(myPosition, finalPosition, QUEEN);
+            allPossibleMoves.add(knightPromotion);
+            allPossibleMoves.add(bishopPromotion);
+            allPossibleMoves.add(rookPromotion);
+            allPossibleMoves.add(queenPromotion);
+        }
 
-    PawnMoves(ChessBoard board, ChessPosition myPosition) {
-        super(board, myPosition);
-    }
+        public void pawnMoves() {
+            int pieceRow = myPosition.getRow();
+            int pieceCol = myPosition.getColumn();
+            int colorChecker = 0;
 
-    private void promotionMoves(ChessPosition currentPosition, ChessPosition finalPosition){
-        ChessMove knightPromotion = new ChessMove(myPosition, finalPosition, KNIGHT);
-        ChessMove bishopPromotion = new ChessMove(myPosition, finalPosition, BISHOP);
-        ChessMove rookPromotion = new ChessMove(myPosition, finalPosition, ROOK);
-        ChessMove queenPromotion = new ChessMove(myPosition, finalPosition, QUEEN);
-        allPossibleMoves.add(knightPromotion);
-        allPossibleMoves.add(bishopPromotion);
-        allPossibleMoves.add(rookPromotion);
-        allPossibleMoves.add(queenPromotion);
-    }
-
-    public List<ChessMove> main(){
-        int pieceRow = myPosition.getRow();
-        int pieceCol = myPosition.getColumn();
-        // ChessMove needs startPosition, endPosition, and promotionPiece
-
-        ChessPosition advanceTest = new ChessPosition(pieceRow+1, pieceCol);
-        ChessPosition doubleAdvanceTest = new ChessPosition(pieceRow+2, pieceCol);
-
-        if(board.getPiece(advanceTest) == null && advanceTest.getRow() == 8){
-            // IF pawn can promote, add promotions
-            promotionMoves(myPosition, advanceTest);
-        } else if(board.getPiece(advanceTest) == null){
-            // IF pawn can move forward and will not promote
-            if(!hasMoved && board.getPiece(doubleAdvanceTest) == null){
-                // IF pawn hasn't moved yet and nothing blocking it, can move twice as far
-                ChessMove doubleAdvance = new ChessMove(myPosition, doubleAdvanceTest, null);
-                allPossibleMoves.add(doubleAdvance);
+            // Ensures pawns move and check captures the correct direction
+            if(teamColor == ChessGame.TeamColor.WHITE){
+                colorChecker = 1;
+            }else{
+                colorChecker = -1;
             }
-            ChessMove advanceMove = new ChessMove(myPosition, advanceTest, null);
-            allPossibleMoves.add(advanceMove);
-        }
+            if(((pieceRow + colorChecker) == 1) || ((pieceRow + colorChecker) == 8)){
+                // If one move would promote
+                if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol)) == null) {
+                    // If direct movement is unblocked, add promotions for pushing
+                    promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol));
+                }
+                if(pieceCol == 1 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
+                    // If on left side of board don't check left captures
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor){
+                        // If piece in capture spot isn't team color add all promotions from capture
+                        promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1));
+                    }
+                }else if(pieceCol == 8 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null){
+                    // If on right side of board, don't check right captures
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor){
+                        // If piece in capture spot isn't team color add all promotions from capture
+                        promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1));
+                    }
+                }else{
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
+                        if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor){
+                            // If piece in capture spot isn't team color add all promotions from capture
+                            promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1));
+                        }
+                    }else if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
+                        if (board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor) {
+                            // If piece in capture spot isn't team color add all promotions from capture
+                            promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1));
+                        }
+                    }
 
-        if(pieceCol == 1){
-            // IF pawn is on first col, check only for right captures
-        }else if(pieceCol == 8){
-            // IF pawn is on last col, check only for left capture
-        }else{
-            // Pawn is in location to check for both
+                }
+            }else{
+                // Handle all other captures that don't promote
+                if(pieceCol == 1 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
+                    // If on left side of board don't check left captures
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor){
+                        // If piece in capture spot isn't team color add all promotions from capture
+                        allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1), null));
+                    }
+                }else if(pieceCol == 8 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
+                    // If on right side of board, don't check right captures
+                    if (board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor) {
+                        // If piece in capture spot isn't team color add all promotions from capture
+                        allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1), null));
+                    }
+                }
+                // Adds double move
+                if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol)) == null){
+                    if((pieceRow == 7 || pieceRow == 2) && notMoved && board.getPiece(new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol)) == null){
+                        // Check for double movement
+                        allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol), null));
+                    }
+                }
+            }
         }
-        // Ensure checks to capture don't go out of bounds of array. Also, can capture and promote
-        // If it can capture diagonally, Must be separate if/else chain
-        // Check if en passant
-        return allPossibleMoves;
-    }*/
+    }
 }

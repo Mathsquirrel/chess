@@ -92,8 +92,8 @@ public class ChessPiece {
             KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
             allMoves.addAll(allKnightMoves.getAllPossibleMoves());
         }else if(type == PieceType.PAWN){
-            // PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
-            // allMoves.addAll(allPawnMoves.getAllPossibleMoves());
+            PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
+            allMoves.addAll(allPawnMoves.getAllPossibleMoves());
         }
         return allMoves;
     }
