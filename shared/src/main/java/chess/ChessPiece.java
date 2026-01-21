@@ -75,10 +75,28 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         PieceType type = board.getPiece(myPosition).getPieceType();
-        List<ChessMove> allMoves = new PieceMovesCalculator(board, myPosition).getAllPossibleMoves();
-        // IF any of the movements in the array would have a piece move where there is a friendly piece, remove them
-        allMoves.removeIf(move -> board.getPiece(move.getEndPosition()).getTeamColor() == board.getPiece(myPosition).getTeamColor());
+        List<ChessMove> allMoves = new ArrayList<>();
+        if(type == PieceType.KING){
+            KingMoves allKingMoves = new KingMoves(board, myPosition);
+            allMoves.addAll(allKingMoves.getAllPossibleMoves());
+        }else if(type == PieceType.QUEEN){
+            // QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
+            //return allQueenMoves.getAllPossibleMoves();
+        }else if(type == PieceType.ROOK){
+            // RookMoves allRookMoves = new RookMoves(board, myPosition);
+            //return allRookMoves.getAllPossibleMoves();
+        }else if(type == PieceType.BISHOP){
+            BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
+            return allBishopMoves.getAllPossibleMoves();
+        }else if(type == PieceType.KNIGHT){
+            //KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
+            //return allKnightMoves.getAllPossibleMoves();
+        }else if(type == PieceType.PAWN){
+            //PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
+            //return allPawnMoves.getAllPossibleMoves();
+        }
         return allMoves;
+        // IF any of the movements in the array would have a piece move where there is a friendly piece, remove them
     }
 }
 

@@ -5,9 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PieceMovesCalculator{
-private final ChessBoard board;
-private final ChessPosition myPosition;
-private ChessPiece piece;
+private static ChessBoard board = new ChessBoard();
+private static ChessPosition myPosition = null;
+private static ChessPiece piece;
 private boolean hasMoved = false;
 int pieceRow;
 int pieceCol;
@@ -21,28 +21,13 @@ ChessGame.TeamColor teamColor;
     this.myPosition = myPosition;
     piece = board.getPiece(myPosition);
     teamColor = board.getPiece(myPosition).getTeamColor();
-
-    switch(piece.getPieceType()){
-        case PAWN:
-            // PawnMoves allMoves = new PawnMoves(board, myPosition);
-        case KNIGHT:
-            // KnightMoves allMoves = new KnightMoves(board, myPosition);
-        case BISHOP:
-            // BishopMoves allMoves = new BishopMoves(board, myPosition);
-        case ROOK:
-            // RookMoves allMoves = new RookMoves(board, myPosition);
-        case QUEEN:
-            // QueenMoves allMoves = new QueenMoves(board, myPosition);
-        case KING:
-            KingMoves allMoves = new KingMoves(board, myPosition);
-    }
 }
 
 public List<ChessMove> getAllPossibleMoves() {
     return allPossibleMoves;
 }
 
-public class KingMoves extends PieceMovesCalculator {
+public static class KingMoves extends PieceMovesCalculator {
 
     KingMoves(ChessBoard board, ChessPosition myPosition) {
         super(board, myPosition);
@@ -50,105 +35,99 @@ public class KingMoves extends PieceMovesCalculator {
     }
 
     private void kingMoves() {
-        if(pieceRow != 8) {
-            // Not at top, add all forward moves
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + 1, pieceCol), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + 1, pieceCol + 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + 1, pieceCol - 1), piece.getPieceType()));
-        }
-        if(pieceRow != 1) {
-            // Not at bottom, add all backwards moves
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol + 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol - 1), piece.getPieceType()));
-        }
-        if(pieceCol != 1) {
-            // Not on far left, add all leftward moves
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + 1, pieceCol - 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow, pieceCol - 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol - 1), piece.getPieceType()));
-        }
-        if(pieceCol != 8) {
-            // Not on far right, add all rightward moves
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + 1, pieceCol + 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow, pieceCol + 1), piece.getPieceType()));
-            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow - 1, pieceCol + 1), piece.getPieceType()));
-        }
-    }
+        // IF move is not out of bounds and IF piece of same color already there, then can move
 
-    private void diagonalMoves(ChessBoard board, ChessPosition myPosition){
-        // Logic for moving diagonally
+        // Put second if inside to check if spot is clear
+        int[] allRowVariations = {-1, -1, -1, 0, 0, 1, 1, 1};
+        int[] allColVariations = {1, 0, -1, 1, -1, 1, 0, -1};
+        for (int i = 0; i < allRowVariations.length; i++) {
+            int possibleRow = myPosition.getRow() + allRowVariations[i];
+            int possibleCol = myPosition.getColumn() + allColVariations[i];
+            if (possibleRow < 1 || possibleRow > 8 || possibleCol < 1 || possibleCol > 8) {
 
-        // Until you reach the top rank
-        for(int newRow = pieceRow; newRow < 9; newRow++){
-            // Right Diagonal Up
-            for(int newCol = pieceCol; newCol < 9; newCol++){
-                // Until you reach the far right rank
-                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-                if(board.getPiece(possibleMove).getPieceType() != null){
-                    // If you encounter a piece, stop looking that direction and add capture if needed
-                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
-                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                    }
-                    break;
+            } else if (board.getPiece(new ChessPosition(possibleRow, possibleCol)) != null) {
+                if (board.getPiece(new ChessPosition(possibleRow, possibleCol)).getTeamColor() != teamColor) {
+                    allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
                 }
-            }
-
-            // Left Diagonal Up
-            for(int newCol = pieceCol; newCol > 0; newCol--){
-                // Until you reach the far left rank
-                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-                if(board.getPiece(possibleMove).getPieceType() != null){
-                    // If you encounter a piece, stop looking that direction and add capture if needed
-                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
-                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                    }
-                    break;
-                }
-            }
-        }
-
-        // Until you reach the bottom rank
-        for(int newRow = pieceRow; newRow > 0; newRow--){
-            // Left Diagonal Down
-            for(int newCol = pieceCol; newCol > 0; newCol--){
-                // Until you reach the far left rank
-                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-                if(board.getPiece(possibleMove).getPieceType() != null){
-                    // If you encounter a piece, stop looking that direction and add capture if needed
-                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
-                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                    }
-                    break;
-                }
-            }
-
-            // Right Diagonal Down
-            for(int newCol = pieceCol; newCol < 9; newCol++){
-                // Until you reach the far right rank
-                ChessPosition possibleMove = new ChessPosition(newRow, newCol);
-                if(board.getPiece(possibleMove).getPieceType() != null){
-                    // If you encounter a piece, stop looking that direction and add capture if needed
-                    if(board.getPiece(possibleMove).getTeamColor() != teamColor){
-                        allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
-                    }
-                    break;
-                }
+            } else {
+                allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(possibleRow, possibleCol), null));
             }
         }
     }
 }
 
-    public class BishopMoves extends PieceMovesCalculator {
+public void diagonalMoves(ChessBoard board, ChessPosition myPosition) {
+    // Logic for moving diagonally
 
-        BishopMoves(ChessBoard board, ChessPosition myPosition) {
-            super(board, myPosition);
-            bishopMoves();
+    // Until you reach the top rank
+    for (int newRow = pieceRow; newRow < 8; newRow++) {
+        // Right Diagonal Up
+        for (int newCol = pieceCol; newCol < 8; newCol++) {
+            // Until you reach the far right rank
+            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+            if (board.getPiece(possibleMove).getPieceType() != null) {
+                // If you encounter a piece, stop looking that direction and add capture if needed
+                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
+                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                }
+                break;
+            }
         }
 
-        private void bishopMoves() {
-
+        // Left Diagonal Up
+        for (int newCol = pieceCol; newCol > 0; newCol--) {
+            // Until you reach the far left rank
+            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+            if (board.getPiece(possibleMove).getPieceType() != null) {
+                // If you encounter a piece, stop looking that direction and add capture if needed
+                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
+                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                }
+                break;
+            }
         }
+    }
+
+    // Until you reach the bottom rank
+    for (int newRow = pieceRow; newRow > 0; newRow--) {
+        // Left Diagonal Down
+        for (int newCol = pieceCol; newCol > 0; newCol--) {
+            // Until you reach the far left rank
+            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+            if (board.getPiece(possibleMove).getPieceType() != null) {
+                // If you encounter a piece, stop looking that direction and add capture if needed
+                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
+                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                }
+                break;
+            }
+        }
+
+        // Right Diagonal Down
+        for (int newCol = pieceCol; newCol < 8; newCol++) {
+            // Until you reach the far right rank
+            ChessPosition possibleMove = new ChessPosition(newRow, newCol);
+            if (board.getPiece(possibleMove).getPieceType() != null) {
+                // If you encounter a piece, stop looking that direction and add capture if needed
+                if (board.getPiece(possibleMove).getTeamColor() != teamColor) {
+                    allPossibleMoves.add(new ChessMove(myPosition, possibleMove, piece.getPieceType()));
+                }
+                break;
+            }
+        }
+    }
+}
+
+public static class BishopMoves extends PieceMovesCalculator {
+
+    BishopMoves(ChessBoard board, ChessPosition myPosition) {
+        super(board, myPosition);
+        bishopMoves();
+    }
+
+    private void bishopMoves() {
+        diagonalMoves(board, myPosition);
+    }
 }
 
 
