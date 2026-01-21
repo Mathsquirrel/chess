@@ -4,6 +4,8 @@ import chess.ChessPiece.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static chess.ChessGame.TeamColor.BLACK;
+import static chess.ChessGame.TeamColor.WHITE;
 import static chess.ChessPiece.PieceType.*;
 
 public class PieceMovesCalculator {
@@ -321,17 +323,21 @@ public class PieceMovesCalculator {
                     // If direct movement is unblocked, add promotions for pushing
                     promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol));
                 }
-                if(pieceCol == 1 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
-                    // If on left side of board don't check left captures
-                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor){
-                        // If piece in capture spot isn't team color add all promotions from capture
-                        promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1));
+                if(pieceCol == 1){
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null) {
+                        // If on left side of board don't check left captures
+                        if (board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor) {
+                            // If piece in capture spot isn't team color add all promotions from capture
+                            promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1));
+                        }
                     }
-                }else if(pieceCol == 8 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null){
+                }else if(pieceCol == 8){
                     // If on right side of board, don't check right captures
-                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor){
-                        // If piece in capture spot isn't team color add all promotions from capture
-                        promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1));
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
+                        if (board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor) {
+                            // If piece in capture spot isn't team color add all promotions from capture
+                            promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1));
+                        }
                     }
                 }else{
                     if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
@@ -339,7 +345,8 @@ public class PieceMovesCalculator {
                             // If piece in capture spot isn't team color add all promotions from capture
                             promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1));
                         }
-                    }else if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
+                    }
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
                         if (board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor) {
                             // If piece in capture spot isn't team color add all promotions from capture
                             promotionMoves(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1));
@@ -347,7 +354,10 @@ public class PieceMovesCalculator {
                     }
 
                 }
-            }else{
+            }else if((pieceRow == 1 && teamColor == BLACK) || (pieceRow == 8 && teamColor == WHITE)){
+
+            }
+            else{
                 // Handle all other captures that don't promote
                 if(pieceCol == 1 && board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null){
                     // If on left side of board don't check left captures
@@ -382,9 +392,11 @@ public class PieceMovesCalculator {
                 }
                 // Adds double move
                 if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol)) == null){
-                    if((pieceRow == 7 || pieceRow == 2) && notMoved && board.getPiece(new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol)) == null){
+                    if(((pieceRow == 7 && teamColor == BLACK) || (pieceRow == 2 && teamColor == WHITE)) && notMoved){
                         // Check for double movement
-                        allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol), null));
+                        if(board.getPiece(new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol)) == null) {
+                            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker + colorChecker, pieceCol), null));
+                        }
                     }
                 }
             }
