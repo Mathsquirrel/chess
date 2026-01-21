@@ -286,9 +286,6 @@ public class PieceMovesCalculator {
         }
     }
 
-    // REMEMBER THAT PAWN LOGIC CHANGES BASED ON COLOR. CHECK COLOR AND THEN ASSIGN VARIABLE TO NUMBER BASED ON COLOR AND APPLY THAT VARIABLE
-    // TO ALL CHECKS. Ex: White = 1, Black = -1. finalPosition = currentPosition(x + COLOR, COL) so that check logic doesn't care about color
-
     public static class PawnMoves extends PieceMovesCalculator {
 
         PawnMoves(ChessBoard board, ChessPosition myPosition) {
@@ -297,10 +294,10 @@ public class PieceMovesCalculator {
         }
 
         private void promotionMoves(ChessPosition currentPosition, ChessPosition finalPosition) {
-            ChessMove knightPromotion = new ChessMove(myPosition, finalPosition, KNIGHT);
-            ChessMove bishopPromotion = new ChessMove(myPosition, finalPosition, BISHOP);
-            ChessMove rookPromotion = new ChessMove(myPosition, finalPosition, ROOK);
-            ChessMove queenPromotion = new ChessMove(myPosition, finalPosition, QUEEN);
+            ChessMove knightPromotion = new ChessMove(currentPosition, finalPosition, KNIGHT);
+            ChessMove bishopPromotion = new ChessMove(currentPosition, finalPosition, BISHOP);
+            ChessMove rookPromotion = new ChessMove(currentPosition, finalPosition, ROOK);
+            ChessMove queenPromotion = new ChessMove(currentPosition, finalPosition, QUEEN);
             allPossibleMoves.add(knightPromotion);
             allPossibleMoves.add(bishopPromotion);
             allPossibleMoves.add(rookPromotion);
@@ -364,6 +361,24 @@ public class PieceMovesCalculator {
                         // If piece in capture spot isn't team color add all promotions from capture
                         allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1), null));
                     }
+                }else if (pieceCol != 1 && pieceCol !=8){
+                    // Not on edge of board and not promoting
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)) != null) {
+                        if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol + 1)).getTeamColor() != teamColor) {
+                            // If piece in capture spot isn't team color add capture
+                            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol + 1), null));
+                        }
+                    }
+                    if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)) != null) {
+                        if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol - 1)).getTeamColor() != teamColor) {
+                            // If piece in capture spot isn't team color add all promotions from capture
+                            allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol - 1), null));
+                        }
+                    }
+                }
+                // Add basic move
+                if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol)) == null) {
+                    allPossibleMoves.add(new ChessMove(myPosition, new ChessPosition(pieceRow + colorChecker, pieceCol), null));
                 }
                 // Adds double move
                 if(board.getPiece(new ChessPosition(pieceRow + colorChecker, pieceCol)) == null){
