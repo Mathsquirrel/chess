@@ -9,7 +9,7 @@ import java.util.Objects;
  * signature of the existing methods.
  */
 public class ChessGame {
-
+    ChessBoard board = new ChessBoard();
     TeamColor currentTeam = TeamColor.WHITE;
     public ChessGame() {
 
@@ -20,20 +20,6 @@ public class ChessGame {
      */
     public TeamColor getTeamTurn() {
         return currentTeam;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ChessGame chessGame = (ChessGame) o;
-        return currentTeam == chessGame.currentTeam;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(currentTeam);
     }
 
     /**
@@ -105,13 +91,27 @@ public class ChessGame {
         throw new RuntimeException("Not implemented");
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(board, chessGame.board) && currentTeam == chessGame.currentTeam;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, currentTeam);
+    }
+
     /**
      * Sets this game's chessboard with a given board
      *
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        throw new RuntimeException("Not implemented");
+        this.board = board;
     }
 
     /**
@@ -120,6 +120,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        throw new RuntimeException("Not implemented");
+        return board;
     }
 }
