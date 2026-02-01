@@ -1,6 +1,7 @@
 package chess;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -81,7 +82,7 @@ public class ChessGame {
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
         if(validMoves(move.getStartPosition()).contains(move) && getTeamTurn() == getBoard().getPiece(move.getStartPosition()).getTeamColor()){
-            // If the move is a valid move and it's the turn of that piece
+            // If the move is a valid move, and it's the turn of that piece
             ChessPiece piece = board.getPiece(move.getStartPosition());
             board.addPiece(move.getStartPosition(), null);
             board.addPiece(move.getEndPosition(), piece);
@@ -95,6 +96,23 @@ public class ChessGame {
         }
     }
 
+    private ChessPosition getKingPosition(TeamColor teamColor){
+        ChessPosition kingPosition = new ChessPosition(1, 1);
+        outerloop:
+        for(int i = 0; i < 8; i++){
+            // For each row on the board
+            for(int j = 0; j < 8; j++){
+                ChessPiece currentPiece = board.getBoardState()[i][j];
+                // For each piece on the board
+                if(currentPiece.getPieceType() == ChessPiece.PieceType.KING && getTeamTurn() == teamColor){
+                    kingPosition = new ChessPosition(i, j);
+                    break outerloop;
+                }
+            }
+        }
+        return kingPosition;
+    }
+
     /**
      * Determines if the given team is in check
      *
@@ -102,7 +120,26 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        boolean inCheck = false;
+        outerloop:
+        for(int i = 0; i < 8; i++){
+            // For each row on the board
+            for(int j = 0; j < 8; j++){
+                ChessPiece currentPiece = board.getBoardState()[i][j];
+                // For each piece on the board
+                if(currentPiece.getTeamColor() != teamColor){
+                    // If piece is opposite team, check moves of that piece
+                    Collection<ChessMove> pieceMoves = currentPiece.pieceMoves(board, new ChessPosition(i, j));
+                    for(ChessMove move : pieceMoves){
+                        if(Objects.equals(move.getEndPosition(), getKingPosition(teamColor))){
+                            inCheck = true;
+                            break outerloop;
+                        }
+                    }
+                }
+            }
+        }
+        return inCheck;
     }
 
     /**
