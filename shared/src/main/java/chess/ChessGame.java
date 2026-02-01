@@ -1,4 +1,5 @@
 package chess;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
@@ -47,7 +48,28 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        if (board.getPiece(startPosition) == null) {
+            return null;
+        } else {
+            // Sets validOptions to all possible moves
+            Collection<ChessMove> allOptions = board.getPiece(startPosition).pieceMoves(board, startPosition);
+            Collection<ChessMove> validOptions = new ArrayList<ChessMove>();
+            try {
+                for(ChessMove move : allOptions){
+                    ChessGame duplicateGame = (ChessGame) this.clone();
+                    // For each move, if that move doesn't leave the king in check it's valid
+                    duplicateGame.makeMove(move);
+                    if(!duplicateGame.isInCheck(duplicateGame.getTeamTurn())){
+                        validOptions.add(move);
+                    }
+                }
+            }catch(CloneNotSupportedException e){
+                e.printStackTrace();
+            } catch (InvalidMoveException e) {
+                throw new RuntimeException(e);
+            }
+            return validOptions;
+        }
     }
 
     /**

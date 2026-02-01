@@ -10,7 +10,6 @@ import static chess.ChessPiece.PieceType.*;
 public class PieceMovesCalculator {
     private static ChessBoard board = new ChessBoard();
     private static ChessPosition myPosition = null;
-    private static ChessPiece piece;
     int pieceRow;
     int pieceCol;
     List<ChessMove> allPossibleMoves = new ArrayList<>();
@@ -19,9 +18,9 @@ public class PieceMovesCalculator {
     PieceMovesCalculator(ChessBoard board, ChessPosition myPosition) {
         pieceRow = myPosition.getRow();
         pieceCol = myPosition.getColumn();
-        this.board = board;
-        this.myPosition = myPosition;
-        piece = board.getPiece(myPosition);
+        PieceMovesCalculator.board = board;
+        PieceMovesCalculator.myPosition = myPosition;
+        ChessPiece piece = board.getPiece(myPosition);
         teamColor = piece.getTeamColor();
     }
 
