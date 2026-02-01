@@ -53,10 +53,11 @@ public class ChessGame {
         } else {
             // Sets validOptions to all possible moves
             Collection<ChessMove> allOptions = board.getPiece(startPosition).pieceMoves(board, startPosition);
-            Collection<ChessMove> validOptions = new ArrayList<ChessMove>();
+            Collection<ChessMove> validOptions = new ArrayList<>();
             try {
                 for(ChessMove move : allOptions){
                     ChessGame duplicateGame = (ChessGame) this.clone();
+                    duplicateGame.setBoard(this.getBoard());
                     // For each move, if that move doesn't leave the king in check it's valid
                     duplicateGame.makeMove(move);
                     if(!duplicateGame.isInCheck(duplicateGame.getTeamTurn())){
@@ -84,6 +85,11 @@ public class ChessGame {
             ChessPiece piece = board.getPiece(move.getStartPosition());
             board.addPiece(move.getStartPosition(), null);
             board.addPiece(move.getEndPosition(), piece);
+            if(currentTeam == TeamColor.WHITE){
+                setTeamTurn(TeamColor.BLACK);
+            }else{
+                setTeamTurn(TeamColor.WHITE);
+            }
         }else{
             throw new InvalidMoveException("That was an invalid move");
         }
