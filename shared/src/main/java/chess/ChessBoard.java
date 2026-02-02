@@ -39,16 +39,22 @@ public class ChessBoard {
         board = new ChessPiece[8][8];
     }
 
-    /**
-     * Adds a chess piece to the chessboard
-     *
-     * @param position where to add the piece to
-     * @param piece    the piece to add
-     */
+    public ChessBoard(ChessBoard other){
+        // Alternate constructor that generates a copy of the provided board
+        board = new ChessPiece[8][8];
+        for(int i = 0; i < 8; i++){
+            System.arraycopy(other.board[i], 0, this.board[i], 0, 8);
+        }
+    }
 
     public ChessPiece[][] getBoardState(){
         return board;
     }
+
+    /** Adds piece to board
+     * @param position Where the piece is located
+     * @param piece The type of piece being placed
+     */
     public void addPiece(ChessPosition position, ChessPiece piece) {
         board[position.getRow() - 1][position.getColumn() - 1] = piece;
     }

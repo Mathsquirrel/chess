@@ -1,7 +1,8 @@
 package chess;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import chess.ChessBoard.*;
 import java.util.Objects;
 
 /**
@@ -12,9 +13,10 @@ import java.util.Objects;
  */
 public class ChessGame {
     ChessBoard board = new ChessBoard();
-    TeamColor currentTeam = TeamColor.WHITE;
+    TeamColor currentTeam;
     public ChessGame() {
-
+        board.resetBoard();
+        currentTeam = TeamColor.WHITE;
     }
 
     /**
@@ -33,6 +35,20 @@ public class ChessGame {
         currentTeam = team;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessGame chessGame = (ChessGame) o;
+        return Objects.equals(board, chessGame.board) && currentTeam == chessGame.currentTeam;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(board, currentTeam);
+    }
+
     /**
      * Enum identifying the 2 possible teams in a chess game
      */
@@ -49,26 +65,24 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
+        // FOR TESTS WHITE IS UPPERCASE and black is lowercase
+
         if (board.getPiece(startPosition) == null) {
             return null;
         } else {
             // Sets validOptions to all possible moves
             Collection<ChessMove> allOptions = board.getPiece(startPosition).pieceMoves(board, startPosition);
             Collection<ChessMove> validOptions = new ArrayList<>();
-            try {
-                for(ChessMove move : allOptions){
-                    ChessGame duplicateGame = (ChessGame) this.clone();
-                    duplicateGame.setBoard(this.getBoard());
-                    // For each move, if that move doesn't leave the king in check it's valid
-                    duplicateGame.makeMove(move);
-                    if(!duplicateGame.isInCheck(duplicateGame.getTeamTurn())){
-                        validOptions.add(move);
-                    }
+            ChessBoard duplicateBoard = new ChessBoard(board);
+            for(ChessMove move : allOptions){
+                // For each move, if that move doesn't leave the king in check it's valid
+                ChessPiece piece = board.getPiece(move.getStartPosition());
+                board.addPiece(move.getEndPosition(), piece);
+                board.addPiece(move.getStartPosition(), null);
+                if(!isInCheck(piece.getTeamColor())) {
+                    validOptions.add(move);
                 }
-            }catch(CloneNotSupportedException e){
-                e.printStackTrace();
-            } catch (InvalidMoveException e) {
-                throw new RuntimeException(e);
+                board = new ChessBoard (duplicateBoard);
             }
             return validOptions;
         }
@@ -81,7 +95,7 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        if(validMoves(move.getStartPosition()).contains(move) && getTeamTurn() == getBoard().getPiece(move.getStartPosition()).getTeamColor()){
+        if(validMoves(move.getStartPosition()) != null && validMoves(move.getStartPosition()).contains(move) && getTeamTurn() == getBoard().getPiece(move.getStartPosition()).getTeamColor()){
             // If the move is a valid move, and it's the turn of that piece
             ChessPiece piece = board.getPiece(move.getStartPosition());
             board.addPiece(move.getStartPosition(), null);
@@ -104,8 +118,8 @@ public class ChessGame {
             for(int j = 0; j < 8; j++){
                 ChessPiece currentPiece = board.getBoardState()[i][j];
                 // For each piece on the board
-                if(currentPiece.getPieceType() == ChessPiece.PieceType.KING && getTeamTurn() == teamColor){
-                    kingPosition = new ChessPosition(i, j);
+                if(currentPiece != null && currentPiece.getPieceType() == ChessPiece.PieceType.KING && currentPiece.getTeamColor() == teamColor){
+                    kingPosition = new ChessPosition(i + 1, j + 1);
                     break outerloop;
                 }
             }
@@ -121,17 +135,21 @@ public class ChessGame {
      */
     public boolean isInCheck(TeamColor teamColor) {
         boolean inCheck = false;
+        ChessPosition kingPosition = getKingPosition(teamColor);
         outerloop:
-        for(int i = 0; i < 8; i++){
+        for(int i = 1; i < 9; i++){
             // For each row on the board
-            for(int j = 0; j < 8; j++){
-                ChessPiece currentPiece = board.getBoardState()[i][j];
+            for(int j = 1; j < 9; j++){
+                ChessPiece currentPiece = board.getBoardState()[i - 1][j - 1];
                 // For each piece on the board
-                if(currentPiece.getTeamColor() != teamColor){
-                    // If piece is opposite team, check moves of that piece
+
+                if(currentPiece != null && currentPiece.getTeamColor() != teamColor){
+                    // If piece exists and is the opposite color
+
                     Collection<ChessMove> pieceMoves = currentPiece.pieceMoves(board, new ChessPosition(i, j));
                     for(ChessMove move : pieceMoves){
-                        if(Objects.equals(move.getEndPosition(), getKingPosition(teamColor))){
+                        // For each move in the available moves, check if they can capture the king
+                        if(Objects.equals(move.getEndPosition(), kingPosition)){
                             inCheck = true;
                             break outerloop;
                         }
@@ -175,20 +193,6 @@ public class ChessGame {
         }
         // Must not be in check and must have no moves to return true
         return !isInCheck(teamColor) && (allValidPieceMoves.isEmpty());
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-        ChessGame chessGame = (ChessGame) o;
-        return Objects.equals(board, chessGame.board) && currentTeam == chessGame.currentTeam;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(board, currentTeam);
     }
 
     /**

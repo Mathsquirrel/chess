@@ -39,7 +39,7 @@ public class PieceMovesCalculator {
             // All possible variations of movement
             int[] allRowVariations = {-1, -1, -1, 0, 0, 1, 1, 1};
             int[] allColVariations = {1, 0, -1, 1, -1, 1, 0, -1};
-            validMoves(board, myPosition, allRowVariations, allColVariations, false);
+            validMovement(board, myPosition, allRowVariations, allColVariations, false);
         }
     }
 
@@ -54,20 +54,20 @@ public class PieceMovesCalculator {
             // All possible variations of movement
             int[] allRowVariations = {2, 2, 1, 1, -1, -1, -2, -2};
             int[] allColVariations = {-1, 1, -2, 2, -2, 2, -1, 1};
-            validMoves(board, myPosition, allRowVariations, allColVariations, false);
+            validMovement(board, myPosition, allRowVariations, allColVariations, false);
         }
     }
 
     public void diagonalMoves(ChessBoard board, ChessPosition myPosition) {
         int [] verticalMovements = {1, 1, -1, -1};
         int [] horizontalMovements = {1, -1, 1, -1};
-        validMoves(board, myPosition, verticalMovements, horizontalMovements, true);
+        validMovement(board, myPosition, verticalMovements, horizontalMovements, true);
     }
 
     public void orthogonalMoves(ChessBoard board, ChessPosition myPosition) {
         int [] verticalMovements = {1, -1, 0, 0};
         int [] horizontalMovements = {0, 0, 1, -1};
-        validMoves(board, myPosition, verticalMovements, horizontalMovements, true);
+        validMovement(board, myPosition, verticalMovements, horizontalMovements, true);
     }
 
     public static class QueenMoves extends PieceMovesCalculator {
@@ -95,7 +95,7 @@ public class PieceMovesCalculator {
         }
     }
 
-    public void validMoves(ChessBoard board, ChessPosition myPosition, int[] verticalMoves, int [] horizontalMoves, boolean continuous){
+    public void validMovement(ChessBoard board, ChessPosition myPosition, int[] verticalMoves, int [] horizontalMoves, boolean continuous){
         int testingRow;
         int testingCol;
 
