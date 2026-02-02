@@ -78,22 +78,22 @@ public class ChessPiece {
         List<ChessMove> allMoves = new ArrayList<>();
         if(type == PieceType.KING){
             KingMoves allKingMoves = new KingMoves(board, myPosition);
-            allMoves.addAll(allKingMoves.getAvailableMoves());
+            allMoves.addAll(allKingMoves.getAllPossibleMoves());
         }else if(type == PieceType.QUEEN){
             QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
-            allMoves.addAll(allQueenMoves.getAvailableMoves());
+            allMoves.addAll(allQueenMoves.getAllPossibleMoves());
         }else if(type == PieceType.ROOK){
             RookMoves allRookMoves = new RookMoves(board, myPosition);
-            allMoves.addAll(allRookMoves.getAvailableMoves());
+            allMoves.addAll(allRookMoves.getAllPossibleMoves());
         }else if(type == PieceType.BISHOP){
             BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
-            allMoves.addAll(allBishopMoves.getAvailableMoves());
+            allMoves.addAll(allBishopMoves.getAllPossibleMoves());
         }else if(type == PieceType.KNIGHT){
             KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
-            allMoves.addAll(allKnightMoves.getAvailableMoves());
+            allMoves.addAll(allKnightMoves.getAllPossibleMoves());
         }else if(type == PieceType.PAWN){
             PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
-            allMoves.addAll(allPawnMoves.getAvailableMoves());
+            allMoves.addAll(allPawnMoves.getAllPossibleMoves());
         }
         return allMoves;
     }
