@@ -97,7 +97,11 @@ public class ChessGame {
             // If the move is a valid move, and it's the turn of that piece
             ChessPiece piece = board.getPiece(move.getStartPosition());
             board.addPiece(move.getStartPosition(), null);
-            board.addPiece(move.getEndPosition(), piece);
+            if(move.getPromotionPiece() != null){
+                board.addPiece(move.getEndPosition(), new ChessPiece(getTeamTurn(), move.getPromotionPiece()));
+            }else{
+                board.addPiece(move.getEndPosition(), piece);
+            }
             if(currentTeam == TeamColor.WHITE){
                 setTeamTurn(TeamColor.BLACK);
             }else{
