@@ -1,6 +1,5 @@
 package chess;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import chess.ChessBoard.*;
 import java.util.Objects;
@@ -162,14 +161,35 @@ public class ChessGame {
         return inCheck;
     }
 
+    private Collection<ChessMove> allValidPieceMoves(TeamColor color){
+        Collection<ChessMove> allValidPieceMoves = new ArrayList<>();
+        for(int i = 1; i < 9; i++){
+            // For each row on the board
+            for(int j = 1; j < 9; j++){
+                ChessPiece currentPiece = board.getBoardState()[i - 1][j - 1];
+                // For each piece on the board
+                if(currentPiece != null && currentPiece.getTeamColor() == color){
+                    // Add all that pieces valid moves to the total available moves
+                    allValidPieceMoves.addAll(validMoves(new ChessPosition(i, j)));
+                }
+            }
+        }
+        return allValidPieceMoves;
+    }
+
     /**
      * Determines if the given team is in checkmate
      *
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
+
     public boolean isInCheckmate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        if(isInCheck(teamColor)){
+            Collection<ChessMove> validMovements = allValidPieceMoves(teamColor);
+            return validMovements.isEmpty();
+        }
+        return false;
     }
 
     /**
@@ -181,20 +201,10 @@ public class ChessGame {
      */
     public boolean isInStalemate(TeamColor teamColor) {
         // Might need to add logic for 50 move rule
-        Collection<ChessMove> allValidPieceMoves = new ArrayList<>();
-        for(int i = 0; i < 8; i++){
-            // For each row on the board
-            for(int j = 0; j < 8; j++){
-                ChessPiece currentPiece = board.getBoardState()[i][j];
-                // For each piece on the board
-                if(currentPiece.getTeamColor() == teamColor){
-                    // Add all that pieces valid moves to the total available moves
-                    allValidPieceMoves.addAll(validMoves(new ChessPosition(i, j)));
-                }
-            }
-        }
+        Collection<ChessMove> validMovements = allValidPieceMoves(teamColor);
+
         // Must not be in check and must have no moves to return true
-        return !isInCheck(teamColor) && (allValidPieceMoves.isEmpty());
+        return !isInCheck(teamColor) && (validMovements.isEmpty());
     }
 
     /**
