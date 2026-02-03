@@ -65,8 +65,6 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        // FOR TESTS WHITE IS UPPERCASE and black is lowercase
-
         if (board.getPiece(startPosition) == null) {
             return null;
         } else {

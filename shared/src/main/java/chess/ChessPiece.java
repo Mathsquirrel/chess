@@ -1,5 +1,6 @@
 package chess;
 import chess.PieceMovesCalculator.*;
+import java.util.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -74,28 +75,34 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        PieceType type = board.getPiece(myPosition).getPieceType();
-        List<ChessMove> allMoves = new ArrayList<>();
-        if(type == PieceType.KING){
-            KingMoves allKingMoves = new KingMoves(board, myPosition);
-            allMoves.addAll(allKingMoves.getAllPossibleMoves());
-        }else if(type == PieceType.QUEEN){
-            QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
-            allMoves.addAll(allQueenMoves.getAllPossibleMoves());
-        }else if(type == PieceType.ROOK){
-            RookMoves allRookMoves = new RookMoves(board, myPosition);
-            allMoves.addAll(allRookMoves.getAllPossibleMoves());
-        }else if(type == PieceType.BISHOP){
-            BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
-            allMoves.addAll(allBishopMoves.getAllPossibleMoves());
-        }else if(type == PieceType.KNIGHT){
-            KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
-            allMoves.addAll(allKnightMoves.getAllPossibleMoves());
-        }else if(type == PieceType.PAWN){
-            PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
-            allMoves.addAll(allPawnMoves.getAllPossibleMoves());
+        List<ChessMove> allPossibleMoves = new ArrayList<>();
+        switch (board.getPiece(myPosition).getPieceType()) {
+            case KING:
+                KingMoves allKingMoves = new KingMoves(board, myPosition);
+                allPossibleMoves.addAll(allKingMoves.getAvailableMoves());
+                break;
+            case QUEEN:
+                QueenMoves allQueenMoves = new QueenMoves(board, myPosition);
+                allPossibleMoves.addAll(allQueenMoves.getAvailableMoves());
+                break;
+            case ROOK:
+                RookMoves allRookMoves = new RookMoves(board, myPosition);
+                allPossibleMoves.addAll(allRookMoves.getAvailableMoves());
+                break;
+            case BISHOP:
+                BishopMoves allBishopMoves = new BishopMoves(board, myPosition);
+                allPossibleMoves.addAll(allBishopMoves.getAvailableMoves());
+                break;
+            case KNIGHT:
+                KnightMoves allKnightMoves = new KnightMoves(board, myPosition);
+                allPossibleMoves.addAll(allKnightMoves.getAvailableMoves());
+                break;
+            case PAWN:
+                PawnMoves allPawnMoves = new PawnMoves(board, myPosition);
+                allPossibleMoves.addAll(allPawnMoves.getAvailableMoves());
+                break;
         }
-        return allMoves;
+        return allPossibleMoves;
     }
 }
 
