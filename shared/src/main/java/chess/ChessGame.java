@@ -224,4 +224,17 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return board;
     }
+
+    public boolean canCastle(){
+        // Go back and edit ChessPiece to add a "hasMoved" boolean
+        // After makeMove, update hasMoved for that piece
+        // Check for left castle then right castle
+        // If king hasn't moved and left rook/right rook
+        // If 2 spaces to left or right are open
+        // Move king left/right 1 and then left/right 2 to check for checks
+
+        // If all of those conditions are true, move the king left/right 2
+        // Move the rook opposite the king
+        return true;
+    }
 }
