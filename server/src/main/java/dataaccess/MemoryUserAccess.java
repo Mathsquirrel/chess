@@ -4,6 +4,7 @@ import model.UserData;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 
 public class MemoryUserAccess implements UserAccess{
     Collection<UserData> userList = new ArrayList<>(); // List of UserData objects or users
@@ -12,13 +13,14 @@ public class MemoryUserAccess implements UserAccess{
         userList.add(u);
     }
 
-    public UserData getUser(UserData u) throws DataAccessException {
+    public UserData getUser(String username) throws DataAccessException {
         // If user exists in database, return it
-        if(userList.contains(u)){
-            return u;
-        }else{
-            return null;
-        }
+        for(UserData checker : userList) {
+            if (Objects.equals(checker.username(), username)) {
+                return checker;
+            }
+        }// else
+        return null;
     }
 
     public void clear() throws DataAccessException {
