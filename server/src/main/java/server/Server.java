@@ -10,13 +10,13 @@ public class Server {
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        /**javalin.get("/login", Server::handleLogin);
-        javalin.get("/logout", Server::handleLogout);
-        javalin.get("/clear", Server::handleClear);
-        javalin.get("/register", Server::handleRegister);
-        javalin.get("/joingame", Server::handleJoinGame);
-        javalin.get("/creategame", Server::handleCreateGame);
-        javalin.get("/updategame", Server::handleUpdateGame);*/
+        javalin.get("/session", Server::handleLogin);
+        javalin.get("/session", Server::handleLogout);
+        javalin.get("/db", Server::handleClear);
+        javalin.get("/user", Server::handleRegister);
+        javalin.get("/game", Server::handleJoinGame);
+        javalin.get("/game", Server::handleCreateGame);
+        javalin.get("/game", Server::handleListGames);
 
         // Register your endpoints and exception handlers here.
     }
@@ -54,7 +54,7 @@ public class Server {
         ctx.result("Handling CreateGame");
     }
 
-    private static void handleUpdateGame(Context ctx){
+    private static void handleListGames(Context ctx){
         ctx.result("Handling UpdateGame");
     }
 }
