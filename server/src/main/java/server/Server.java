@@ -3,6 +3,8 @@ package server;
 import io.javalin.*;
 import io.javalin.http.Context;
 
+import static java.lang.IO.print;
+
 public class Server {
 
     private final Javalin javalin;
@@ -10,12 +12,12 @@ public class Server {
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        javalin.get("/session", Server::handleLogin);
-        javalin.get("/session", Server::handleLogout);
-        javalin.get("/db", Server::handleClear);
-        javalin.get("/user", Server::handleRegister);
-        javalin.get("/game", Server::handleJoinGame);
-        javalin.get("/game", Server::handleCreateGame);
+        javalin.post("/session", Server::handleLogin);
+        javalin.delete("/session", Server::handleLogout);
+        javalin.delete("/db", Server::handleClear);
+        javalin.post("/user", Server::handleRegister);
+        javalin.put("/game", Server::handleJoinGame);
+        javalin.post("/game", Server::handleCreateGame);
         javalin.get("/game", Server::handleListGames);
 
         // Register your endpoints and exception handlers here.
@@ -31,6 +33,7 @@ public class Server {
     }
 
     private static void handleLogin(Context ctx){
+        // Goes to proper handler based on request
         ctx.result("Handling Login");
     }
 
