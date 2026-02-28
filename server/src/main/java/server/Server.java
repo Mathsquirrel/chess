@@ -87,7 +87,7 @@ public class Server {
         ctx.result(serializer.toJson(null));
     }
 
-    private static void handleRegister(Context ctx) throws DataAccessException, BadRequestException{
+    private static void handleRegister(Context ctx) throws DataAccessException, AlreadyTakenException{
         // Handles registering a new user
         // Possible handles errors
         RegisterRequest registerRequest;
@@ -121,13 +121,12 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void handleListGames(Context ctx) throws DataAccessException{
+    private static void handleListGames(Context ctx){
         // Handles listing all games
         // Possible Handles errors
         String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         ListGamesService listService = new ListGamesService();
         // Check for authorization before handling
-        isAuthorized(listGamesRequest);
         Collection<ListGamesResponse> response = listService.listGames(gameList);
         ctx.result(serializer.toJson(response));
     }
