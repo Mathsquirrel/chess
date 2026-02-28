@@ -9,7 +9,7 @@ import java.util.Collection;
 public class MemoryGameAccess implements GameAccess {
     Collection<GameData> gameList = new ArrayList<>();// List of GameData objects or Games
 
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames(){
         // Returns all games
         return gameList;
     }

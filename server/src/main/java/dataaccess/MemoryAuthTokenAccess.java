@@ -14,17 +14,18 @@ public class MemoryAuthTokenAccess implements AuthTokenAccess{
         authtokenList.add(newData);
     }
 
-    public AuthData getAuth(String authToken) throws DataAccessException {
+    public AuthData getAuth(String authToken) {
         // If authtoken in authtokenList, return it
         for(AuthData checker : authtokenList){
             if(Objects.equals(checker.authToken(), authToken)){
                 return checker;
             }
-        }// else
+        }
+        // If not, return null
         return null;
     }
 
-    public void deleteAuth(AuthData ad) throws DataAccessException {
+    public void deleteAuth(AuthData ad) {
         // Removes "ad" from the authtokenList
         authtokenList.remove(ad);
     }

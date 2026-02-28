@@ -1,4 +1,22 @@
 package service;
 
+import dataaccess.MemoryAuthTokenAccess;
+import dataaccess.MemoryGameAccess;
+import model.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
 public class ListGamesService {
+    public Collection<ListGamesResponse> listGames(String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList){
+        if(authList.getAuth(authToken) != null){
+            Collection<ListGamesResponse> responseList = new ArrayList<>();
+            for(GameData games : gameList.listGames()){
+                // For each game in the list
+                responseList.add(new ListGamesResponse(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
+            }
+            return responseList;
+        }
+        return null;
+    }
 }

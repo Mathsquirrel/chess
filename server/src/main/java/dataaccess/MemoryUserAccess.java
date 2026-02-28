@@ -8,7 +8,7 @@ import java.util.Objects;
 
 public class MemoryUserAccess implements UserAccess{
     Collection<UserData> userList = new ArrayList<>(); // List of UserData objects or users
-    public void createUser(UserData u) throws DataAccessException {
+    public void createUser(UserData u) {
         // Add user "u" to userList
         userList.add(u);
     }
