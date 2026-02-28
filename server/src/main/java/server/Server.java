@@ -62,6 +62,8 @@ public class Server {
         // Possibly handles errors
         String logoutRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         try {
+            // Check authorization before logging out
+            isAuthorized(logoutRequest);
             LogoutService logoutService = new LogoutService();
             logoutService.logout(logoutRequest, authList);
             ctx.result(serializer.toJson(null));
