@@ -5,7 +5,7 @@ import dataaccess.MemoryGameAccess;
 import model.*;
 
 public class CreateGameService {
-    public CreateGameResponse createGame(CreateGameRequest createGame, String authToken, MemoryGameAccess gameList) throws DataAccessException {
+    public CreateGameResponse createGame(CreateGameRequest createGame, MemoryGameAccess gameList) throws DataAccessException {
         return null;
     }
 }

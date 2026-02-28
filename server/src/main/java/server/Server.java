@@ -96,10 +96,13 @@ public class Server {
     private static void handleCreateGame(Context ctx){
         // Handles creating a new game
         // In-Progress
-        CreateGameRequest gameRequest = serializer.fromJson(ctx.body(), CreateGameRequest.class);
+        CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
+        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
         CreateGameService gameService = new CreateGameService();
         try {
-            CreateGameResponse response = gameService.createGame(registerRequest, userList, authList);
+            // Check authorization before creating game
+            isAuthorized(authorization);
+            CreateGameResponse response = gameService.createGame(gameName, gameList);
             ctx.result(serializer.toJson(response));
         }catch(DataAccessException e){
             ctx.status(401);
@@ -113,6 +116,8 @@ public class Server {
         String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         ListGamesService listService = new ListGamesService();
         try {
+            // Check for authorization before handling
+            isAuthorized(listGamesRequest);
             Collection<ListGamesResponse> response = listService.listGames(listGamesRequest, gameList, authList);
             ctx.result(serializer.toJson(response));
         }catch(DataAccessException e){

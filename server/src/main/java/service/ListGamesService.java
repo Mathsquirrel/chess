@@ -10,15 +10,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ListGamesService {
-    public Collection<ListGamesResponse> listGames(String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) throws DataAccessException {
-        if(authList.getAuth(authToken) != null){
-            Collection<ListGamesResponse> responseList = new ArrayList<>();
-            for(GameData games : gameList.listGames()){
-                // For each game in the list
-                responseList.add(new ListGamesResponse(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
-            }
-            return responseList;
+    public Collection<ListGamesResponse> listGames(String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) {
+        Collection<ListGamesResponse> responseList = new ArrayList<>();
+        for(GameData games : gameList.listGames()){
+            // For each game in the list
+            responseList.add(new ListGamesResponse(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
         }
-        throw new DataAccessException("Error: User Not Logged In");
+        return responseList;
     }
 }
