@@ -34,6 +34,12 @@ public class Server {
             ctx.result(serializer.toJson(returnedError));
         });
 
+        javalin.exception(JsonParseException.class, (e, ctx) -> {
+            ctx.status(400);
+            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
+            ctx.result(serializer.toJson(returnedError));
+        });
+
         javalin.exception(DataAccessException.class, (e, ctx) -> {
             ctx.status(401);
             ErrorResponse returnedError = new ErrorResponse(e.getMessage());
@@ -58,7 +64,7 @@ public class Server {
         javalin.stop();
     }
 
-    private static void handleLogin(Context ctx) throws DataAccessException {
+    private static void handleLogin(Context ctx) throws DataAccessException, JsonParseException{
         // Handles logging in users
         // Possible handles errors
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
@@ -70,12 +76,12 @@ public class Server {
     private static void handleLogout(Context ctx) throws DataAccessException{
         // Handles logging user out
         // Possibly handles errors
-        LogoutRequest logoutRequest = serializer.fromJson(ctx.header("authorization"), LogoutRequest.class);
+        String logoutRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         // Check authorization before logging out
-        isAuthorized(logoutRequest.toString());
+        isAuthorized(logoutRequest);
         LogoutService logoutService = new LogoutService();
-        logoutService.logout(logoutRequest.toString(), authList);
-        ctx.result(serializer.toJson(null));
+        logoutService.logout(logoutRequest, authList);
+        ctx.result(serializer.toJson(new LogoutResponse("{}")));
     }
 
     private static void handleClear(Context ctx){
