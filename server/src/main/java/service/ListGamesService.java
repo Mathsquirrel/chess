@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ListGamesService {
-    public Collection<ListGamesResponse> listGames(String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) {
+    public Collection<ListGamesResponse> listGames(MemoryGameAccess gameList, MemoryAuthTokenAccess authList) {
         Collection<ListGamesResponse> responseList = new ArrayList<>();
         for(GameData games : gameList.listGames()){
             // For each game in the list

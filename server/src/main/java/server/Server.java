@@ -118,7 +118,7 @@ public class Server {
         try {
             // Check for authorization before handling
             isAuthorized(listGamesRequest);
-            Collection<ListGamesResponse> response = listService.listGames(listGamesRequest, gameList, authList);
+            Collection<ListGamesResponse> response = listService.listGames(gameList, authList);
             ctx.result(serializer.toJson(response));
         }catch(DataAccessException e){
             ctx.status(401);
