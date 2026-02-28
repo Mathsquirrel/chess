@@ -74,7 +74,11 @@ public class Server {
     }
 
     private static void handleClear(Context ctx){
-        ctx.result("Handling Clear");
+        ClearService clearService = new ClearService();
+        clearService.clearAuths(authList);
+        clearService.clearUsers(userList);
+        clearService.clearGames(gameList);
+        ctx.result(serializer.toJson(null));
     }
 
     private static void handleRegister(Context ctx){

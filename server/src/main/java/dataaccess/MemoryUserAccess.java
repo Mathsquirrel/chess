@@ -23,7 +23,7 @@ public class MemoryUserAccess implements UserAccess{
         return null;
     }
 
-    public void clear() throws DataAccessException {
+    public void clear() {
         // Clears users from database
         userList = new ArrayList<>();
     }
