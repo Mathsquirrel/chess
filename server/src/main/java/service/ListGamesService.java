@@ -1,11 +1,8 @@
 package service;
 
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthTokenAccess;
 import dataaccess.MemoryGameAccess;
 import model.*;
 
-import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collection;
 
