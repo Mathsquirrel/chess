@@ -19,9 +19,9 @@ public class LoginService {
                 return new LoginRegisterResult(retrievedUser.username(), authToken);
             }
             // If password with username doesn't match
-            throw new DataAccessException("Error: Invalid Login Credentials");
+            throw new DataAccessException("Error: unauthorized");
         }
         // If Username doesn't exist
-        throw new DataAccessException("Error: Invalid Login Credentials");
+        throw new DataAccessException("Error: unauthorized");
     }
 }

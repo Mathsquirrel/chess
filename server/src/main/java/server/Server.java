@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonParseException;
 import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
@@ -27,10 +28,24 @@ public class Server {
         javalin.post("/game", Server::handleCreateGame);
         javalin.get("/game", Server::handleListGames);
 
-        javalin.exception(DataAccessException.class, (e, ctx) -> {
-            ctx.status(500); // Set response status
-            ctx.result(e.getMessage()); // Set response body
+        javalin.exception(BadRequestException.class, (e, ctx) -> {
+            ctx.status(400);
+            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
+            ctx.result(serializer.toJson(returnedError));
         });
+
+        javalin.exception(DataAccessException.class, (e, ctx) -> {
+            ctx.status(401);
+            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
+            ctx.result(serializer.toJson(returnedError));
+        });
+
+        javalin.exception(AlreadyTakenException.class, (e, ctx) -> {
+            ctx.status(403);
+            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
+            ctx.result(serializer.toJson(returnedError));
+        });
+
         // Register your endpoints and exception handlers here.
     }
 
@@ -43,34 +58,24 @@ public class Server {
         javalin.stop();
     }
 
-    private static void handleLogin(Context ctx){
+    private static void handleLogin(Context ctx) throws DataAccessException {
         // Handles logging in users
         // Possible handles errors
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
         LoginService loginService = new LoginService();
-        try {
-            LoginRegisterResult response = loginService.login(loginRequest, userList, authList);
-            ctx.result(serializer.toJson(response));
-        } catch (DataAccessException e) {
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        LoginRegisterResult response = loginService.login(loginRequest, userList, authList);
+        ctx.result(serializer.toJson(response));
     }
 
-    private static void handleLogout(Context ctx){
+    private static void handleLogout(Context ctx) throws DataAccessException{
         // Handles logging user out
         // Possibly handles errors
-        String logoutRequest = serializer.fromJson(ctx.header("authorization"), String.class);
-        try {
-            // Check authorization before logging out
-            isAuthorized(logoutRequest);
-            LogoutService logoutService = new LogoutService();
-            logoutService.logout(logoutRequest, authList);
-            ctx.result(serializer.toJson(null));
-        }catch(DataAccessException e) {
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        LogoutRequest logoutRequest = serializer.fromJson(ctx.header("authorization"), LogoutRequest.class);
+        // Check authorization before logging out
+        isAuthorized(logoutRequest.toString());
+        LogoutService logoutService = new LogoutService();
+        logoutService.logout(logoutRequest.toString(), authList);
+        ctx.result(serializer.toJson(null));
     }
 
     private static void handleClear(Context ctx){
@@ -82,74 +87,55 @@ public class Server {
         ctx.result(serializer.toJson(null));
     }
 
-    private static void handleRegister(Context ctx){
+    private static void handleRegister(Context ctx) throws DataAccessException, BadRequestException{
         // Handles registering a new user
         // Possible handles errors
-        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+        RegisterRequest registerRequest;
+        registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
         RegisterService registerService = new RegisterService();
-        try {
-            LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
-            ctx.result(serializer.toJson(response));
-        }catch(DataAccessException e){
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
+        ctx.result(serializer.toJson(response));
     }
 
-    private static void handleJoinGame(Context ctx){
+    private static void handleJoinGame(Context ctx) throws DataAccessException, BadRequestException, AlreadyTakenException{
         // Handles joining a game
         // In-Progress
         JoinGameRequest gameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
         String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
         JoinGameService joinService = new JoinGameService();
-        try {
-            // Check authorization before creating game
-            isAuthorized(authorization);
-            joinService.joinGame(gameRequest, authorization, gameList, authList);
-            ctx.result(serializer.toJson(null));
-        }catch(DataAccessException e){
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        // Check authorization before creating game
+        isAuthorized(authorization);
+        joinService.joinGame(gameRequest, authorization, gameList, authList);
+        ctx.result(serializer.toJson(null));
     }
 
-    private static void handleCreateGame(Context ctx){
+    private static void handleCreateGame(Context ctx) throws DataAccessException{
         // Handles creating a new game
         // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
         String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
         CreateGameService createService = new CreateGameService();
-        try {
-            // Check authorization before creating game
-            isAuthorized(authorization);
-            CreateGameResponse response = createService.createGame(gameName, gameList);
-            ctx.result(serializer.toJson(response));
-        }catch(DataAccessException e){
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        // Check authorization before creating game
+        isAuthorized(authorization);
+        CreateGameResponse response = createService.createGame(gameName, gameList);
+        ctx.result(serializer.toJson(response));
     }
 
-    private static void handleListGames(Context ctx){
+    private static void handleListGames(Context ctx) throws DataAccessException{
         // Handles listing all games
         // Possible Handles errors
         String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         ListGamesService listService = new ListGamesService();
-        try {
-            // Check for authorization before handling
-            isAuthorized(listGamesRequest);
-            Collection<ListGamesResponse> response = listService.listGames(gameList);
-            ctx.result(serializer.toJson(response));
-        }catch(DataAccessException e){
-            ctx.status(401);
-            ctx.result(serializer.toJson(e.getMessage()));
-        }
+        // Check for authorization before handling
+        isAuthorized(listGamesRequest);
+        Collection<ListGamesResponse> response = listService.listGames(gameList);
+        ctx.result(serializer.toJson(response));
     }
 
     private static void isAuthorized(String authToken) throws DataAccessException{
         if(authList.getAuth(authToken) == null){
             // If authtoken doesn't exist
-            throw new DataAccessException("unauthorized");
+            throw new DataAccessException("{ message: Error: unauthorized }");
         }
     }
 }
