@@ -9,7 +9,7 @@ import java.util.Objects;
 public class MemoryAuthTokenAccess implements AuthTokenAccess{
     Collection<AuthData> authtokenList = new ArrayList<>();// List of Authtoken objects or authorizations
 
-    public void createAuth(AuthData newData) throws DataAccessException {
+    public void createAuth(AuthData newData) {
         // Add new AuthData to authtokenList
         authtokenList.add(newData);
     }

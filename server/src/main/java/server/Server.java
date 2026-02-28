@@ -1,12 +1,17 @@
 package server;
 
+import com.google.gson.Gson;
+import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
-
-import static java.lang.IO.print;
+import model.*;
+import service.*;
 
 public class Server {
-
+    static Gson serializer = new Gson();
+    static MemoryAuthTokenAccess authList = new MemoryAuthTokenAccess();
+    static MemoryGameAccess gameList = new MemoryGameAccess();
+    static MemoryUserAccess userList = new MemoryUserAccess();
     private final Javalin javalin;
 
 
@@ -33,8 +38,10 @@ public class Server {
     }
 
     private static void handleLogin(Context ctx){
-        // Goes to proper handler based on request
-        ctx.result("Handling Login");
+        LoginRequest request = serializer.fromJson(ctx.body(), LoginRequest.class);
+        LoginService service = new LoginService();
+        LoginRegisterResult response = service.login(request, userList, authList);
+        ctx.result(serializer.toJson(response));
     }
 
     private static void handleLogout(Context ctx){

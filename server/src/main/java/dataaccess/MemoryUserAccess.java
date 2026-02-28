@@ -13,7 +13,7 @@ public class MemoryUserAccess implements UserAccess{
         userList.add(u);
     }
 
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) {
         // If user exists in database, return it
         for(UserData checker : userList) {
             if (Objects.equals(checker.username(), username)) {
