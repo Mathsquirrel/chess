@@ -68,7 +68,7 @@ public class Server {
             logoutService.logout(logoutRequest, authList);
             ctx.result(serializer.toJson(null));
         }catch(DataAccessException e) {
-            ctx.status(500);
+            ctx.status(401);
             ctx.result(serializer.toJson(e.getMessage()));
         }
     }
