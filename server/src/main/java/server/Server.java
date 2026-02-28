@@ -6,7 +6,6 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
 import service.*;
-
 public class Server {
     static Gson serializer = new Gson();
     static MemoryAuthTokenAccess authList = new MemoryAuthTokenAccess();
@@ -25,6 +24,10 @@ public class Server {
         javalin.post("/game", Server::handleCreateGame);
         javalin.get("/game", Server::handleListGames);
 
+        javalin.exception(DataAccessException.class, (e, ctx) -> {
+            ctx.status(500); // Set response status
+            ctx.result(e.getMessage()); // Set response body
+        });
         // Register your endpoints and exception handlers here.
     }
 
@@ -38,14 +41,31 @@ public class Server {
     }
 
     private static void handleLogin(Context ctx){
-        LoginRequest request = serializer.fromJson(ctx.body(), LoginRequest.class);
-        LoginService service = new LoginService();
-        LoginRegisterResult response = service.login(request, userList, authList);
-        ctx.result(serializer.toJson(response));
+        // Handles logging in users
+        // Possible handles errors
+        LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
+        LoginService loginService = new LoginService();
+        try {
+            LoginRegisterResult response = loginService.login(loginRequest, userList, authList);
+            ctx.result(serializer.toJson(response));
+        } catch (DataAccessException e) {
+            ctx.status(401);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
     }
 
     private static void handleLogout(Context ctx){
-        ctx.result("Handling Logout");
+        // Handles logging user out
+        // Possibly handles errors
+        String logoutRequest = serializer.fromJson(ctx.header("authorization"), String.class);
+        try {
+            LogoutService logoutService = new LogoutService();
+            logoutService.logout(logoutRequest, authList);
+            ctx.result(serializer.toJson(null));
+        }catch(DataAccessException e) {
+            ctx.status(500);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
     }
 
     private static void handleClear(Context ctx){
@@ -53,7 +73,12 @@ public class Server {
     }
 
     private static void handleRegister(Context ctx){
-        ctx.result("Handling Register");
+        // Handles registering a new user
+        // Functions correctly except for errors
+        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+        RegisterService registerService = new RegisterService();
+        LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
+        ctx.result(serializer.toJson(response));
     }
 
     private static void handleJoinGame(Context ctx){
@@ -65,6 +90,12 @@ public class Server {
     }
 
     private static void handleListGames(Context ctx){
-        ctx.result("Handling UpdateGame");
+        // Handles listing all games
+        // In-Progress
+
+        /*String listGamesRequest = serializer.fromJson(ctx.header(), String.class);
+        RegisterService registerService = new RegisterService();
+        LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
+        ctx.result(serializer.toJson(response));*/
     }
 }
