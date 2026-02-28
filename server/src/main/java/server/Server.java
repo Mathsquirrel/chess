@@ -74,6 +74,7 @@ public class Server {
     }
 
     private static void handleClear(Context ctx){
+        // Handles clearing the databases
         ClearService clearService = new ClearService();
         clearService.clearAuths(authList);
         clearService.clearUsers(userList);
@@ -96,19 +97,32 @@ public class Server {
     }
 
     private static void handleJoinGame(Context ctx){
-        ctx.result("Handling JoinGame");
+        // Handles joining a game
+        // In-Progress
+        JoinGameRequest gameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
+        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
+        JoinGameService joinService = new JoinGameService();
+        try {
+            // Check authorization before creating game
+            isAuthorized(authorization);
+            joinService.joinGame(gameRequest, authorization, gameList, authList);
+            ctx.result(serializer.toJson(null));
+        }catch(DataAccessException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
     }
 
     private static void handleCreateGame(Context ctx){
         // Handles creating a new game
-        // In-Progress
+        // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
         String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
-        CreateGameService gameService = new CreateGameService();
+        CreateGameService createService = new CreateGameService();
         try {
             // Check authorization before creating game
             isAuthorized(authorization);
-            CreateGameResponse response = gameService.createGame(gameName, gameList);
+            CreateGameResponse response = createService.createGame(gameName, gameList);
             ctx.result(serializer.toJson(response));
         }catch(DataAccessException e){
             ctx.status(401);
