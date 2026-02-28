@@ -90,7 +90,7 @@ public class Server {
         clearService.clearAuths(authList);
         clearService.clearUsers(userList);
         clearService.clearGames(gameList);
-        ctx.result(serializer.toJson(null));
+        ctx.result(serializer.toJson(new LogoutResponse("{}")));
     }
 
     private static void handleRegister(Context ctx) throws DataAccessException, AlreadyTakenException{
@@ -133,7 +133,7 @@ public class Server {
         String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         ListGamesService listService = new ListGamesService();
         // Check for authorization before handling
-        Collection<ListGamesResponse> response = listService.listGames(gameList);
+        ListGamesResponse response = listService.listGames(gameList);
         ctx.result(serializer.toJson(response));
     }
 

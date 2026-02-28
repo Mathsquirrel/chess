@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class ListGamesService {
-    public Collection<ListGamesResponse> listGames(MemoryGameAccess gameList) {
-        Collection<ListGamesResponse> responseList = new ArrayList<>();
+    public ListGamesResponse listGames(MemoryGameAccess gameList) {
+        Collection<ListGamesData> responseList = new ArrayList<>();
         for(GameData games : gameList.listGames()){
             // For each game in the list
-            responseList.add(new ListGamesResponse(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
+            responseList.add(new ListGamesData(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
         }
-        return responseList;
+        return new ListGamesResponse(responseList);
     }
 }
