@@ -6,11 +6,11 @@ import model.*;
 import java.util.Objects;
 
 public class JoinGameService {
-    public void joinGame(JoinGameRequest joinRequest, String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) throws DataAccessException, BadRequestException, AlreadyTakenException {
+    public void joinGame(JoinGameRequest joinRequest, String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) throws BadRequestException, AlreadyTakenException {
         GameData gameRetrieved = gameList.getGame(joinRequest.gameID());
         if(gameRetrieved == null){
             // If game doesn't exist
-            throw new DataAccessException("Game ID Invalid");
+            throw new BadRequestException("{Error: bad request}");
         }
         // If game exists
         String username = authList.getAuth(authToken).username();

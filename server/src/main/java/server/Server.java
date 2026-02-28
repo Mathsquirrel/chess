@@ -116,6 +116,10 @@ public class Server {
     }
 
     private static void handleCreateGame(Context ctx) throws DataAccessException{
+
+
+        // NEED TO CREATE CORRECT ID FOR GAMES. AFFECTING JOIN GAME AND LIST GAMES AS RESULT
+
         // Handles creating a new game
         // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
