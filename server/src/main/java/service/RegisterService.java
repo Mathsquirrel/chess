@@ -17,7 +17,7 @@ public class RegisterService {
             userList.createUser(new UserData(registration.username(), registration.password(), registration.email()));
             String authToken = UUID.randomUUID().toString();
             authList.createAuth(new AuthData(registration.username(), authToken));
-            return new LoginRegisterResult(registerResult.username(), authToken);
+            return new LoginRegisterResult(registration.username(), authToken);
         }
         // If username is already taken, throw error
         throw new DataAccessException("Error: Username Already Taken");
