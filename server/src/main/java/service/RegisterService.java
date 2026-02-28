@@ -1,5 +1,6 @@
 package service;
 
+import dataaccess.DataAccessException;
 import dataaccess.MemoryAuthTokenAccess;
 import dataaccess.MemoryUserAccess;
 import model.*;
@@ -9,7 +10,7 @@ import java.util.UUID;
 
 public class RegisterService {
 
-    public LoginRegisterResult register(RegisterRequest registration, MemoryUserAccess userList, MemoryAuthTokenAccess authList){
+    public LoginRegisterResult register(RegisterRequest registration, MemoryUserAccess userList, MemoryAuthTokenAccess authList) throws DataAccessException{
         LoginRegisterResult registerResult = new LoginRegisterResult(null, null);
         if(userList.getUser(registration.username()) == null){
             // If the user doesn't exist, create one and add it to the database
@@ -18,7 +19,7 @@ public class RegisterService {
             authList.createAuth(new AuthData(registration.username(), authToken));
             return new LoginRegisterResult(registerResult.username(), authToken);
         }
-        // THROW ALREADY TAKEN EXCEPTION IF EXISTS
-        return null;
+        // If username is already taken, throw error
+        throw new DataAccessException("Error: Username Already Taken");
     }
 }

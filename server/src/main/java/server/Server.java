@@ -6,6 +6,9 @@ import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
 import service.*;
+
+import java.util.Collection;
+
 public class Server {
     static Gson serializer = new Gson();
     static MemoryAuthTokenAccess authList = new MemoryAuthTokenAccess();
@@ -74,11 +77,16 @@ public class Server {
 
     private static void handleRegister(Context ctx){
         // Handles registering a new user
-        // Functions correctly except for errors
+        // Possible handles errors
         RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
         RegisterService registerService = new RegisterService();
-        LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
-        ctx.result(serializer.toJson(response));
+        try {
+            LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
+            ctx.result(serializer.toJson(response));
+        }catch(DataAccessException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
     }
 
     private static void handleJoinGame(Context ctx){
@@ -86,16 +94,37 @@ public class Server {
     }
 
     private static void handleCreateGame(Context ctx){
-        ctx.result("Handling CreateGame");
+        // Handles creating a new game
+        // In-Progress
+        CreateGameRequest gameRequest = serializer.fromJson(ctx.body(), CreateGameRequest.class);
+        CreateGameService gameService = new CreateGameService();
+        try {
+            CreateGameResponse response = gameService.createGame(registerRequest, userList, authList);
+            ctx.result(serializer.toJson(response));
+        }catch(DataAccessException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
     }
 
     private static void handleListGames(Context ctx){
         // Handles listing all games
-        // In-Progress
+        // Possible Handles errors
+        String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
+        ListGamesService listService = new ListGamesService();
+        try {
+            Collection<ListGamesResponse> response = listService.listGames(listGamesRequest, gameList, authList);
+            ctx.result(serializer.toJson(response));
+        }catch(DataAccessException e){
+            ctx.status(401);
+            ctx.result(serializer.toJson(e.getMessage()));
+        }
+    }
 
-        /*String listGamesRequest = serializer.fromJson(ctx.header(), String.class);
-        RegisterService registerService = new RegisterService();
-        LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
-        ctx.result(serializer.toJson(response));*/
+    private static void isAuthorized(String authToken) throws DataAccessException{
+        if(authList.getAuth(authToken) == null){
+            // If authtoken doesn't exist
+            throw new DataAccessException("unauthorized");
+        }
     }
 }
