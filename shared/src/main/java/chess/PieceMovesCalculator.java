@@ -119,9 +119,9 @@ public class PieceMovesCalculator {
                 ChessMove testMove = new ChessMove(myPosition, testPosition, null);
                 if (horizontalMovement[i] == 0) {
                     // Check for regular push
-
-                    // TOO DEEPLY NESTED
                     if(board.getPiece(testPosition) == null) {
+
+                        // ALL IFS ON THIS ROW ARE TOO DEEP
                         if(testRow == 8 || testRow == 1){
                             promotionMoves(myPosition, testPosition);
                         }else {
