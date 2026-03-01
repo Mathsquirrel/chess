@@ -117,9 +117,12 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void handleListGames(Context ctx){
+    private static void handleListGames(Context ctx) throws DataAccessException{
         // Handles listing all games
         // Possible Handles errors
+        String authorization = ctx.header("authorization");
+        // Check authorization before listing games
+        isAuthorized(authorization);
         ListGamesService listService = new ListGamesService();
         ListGamesResponse response = listService.listGames(gameList);
         ctx.result(serializer.toJson(response));

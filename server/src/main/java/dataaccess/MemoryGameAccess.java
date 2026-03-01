@@ -40,6 +40,6 @@ public class MemoryGameAccess implements GameAccess {
 
     public void deleteGames(){
         // Reinitialize gameList to be empty
-        gameList = new ArrayList<>();
+        gameList.clear();
     }
 }

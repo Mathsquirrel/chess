@@ -25,6 +25,6 @@ public class MemoryUserAccess implements UserAccess{
 
     public void clear() {
         // Clears users from database
-        userList = new ArrayList<>();
+        userList.clear();
     }
 }
