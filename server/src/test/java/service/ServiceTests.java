@@ -14,18 +14,18 @@ public class ServiceTests {
     private static MemoryGameAccess gameList;
     private static MemoryUserAccess userList;
     private static MemoryAuthTokenAccess authList;
-    private static final ClearService clearTesting = new ClearService();
-    private static final CreateGameService createTesting = new CreateGameService();
-    private static final JoinGameService joinTesting = new JoinGameService();
-    private static final LoginService loginTesting = new LoginService();
-    private static final LogoutService logoutTesting = new LogoutService();
-    private static final RegisterService registerTesting = new RegisterService();
+    private static final ClearService CLEAR_TESTING = new ClearService();
+    private static final CreateGameService CREATE_TESTING = new CreateGameService();
+    private static final JoinGameService JOIN_TESTING = new JoinGameService();
+    private static final LoginService LOGIN_TESTING = new LoginService();
+    private static final LogoutService LOGOUT_TESTING = new LogoutService();
+    private static final RegisterService REGISTER_TESTING = new RegisterService();
     private static MemoryGameAccess expectedGameList;
     private static MemoryUserAccess expectedUserList;
     private static MemoryAuthTokenAccess expectedAuthList;
-    private static final GameData testGame = new GameData(1, null, null, "Game1", new ChessGame());
-    private static final UserData testUser = new UserData("TestUser", "TestPassword", "Test@gmail.com");
-    private static final AuthData testAuth = new AuthData("TestUser", "example-auth");
+    private static final GameData TEST_GAME = new GameData(1, null, null, "Game1", new ChessGame());
+    private static final UserData TEST_USER = new UserData("TestUser", "TestPassword", "Test@gmail.com");
+    private static final AuthData TEST_AUTH = new AuthData("TestUser", "example-auth");
 
 
 
@@ -46,9 +46,9 @@ public class ServiceTests {
     @Order(1)
     @DisplayName("Successful User Login")
     public void loginSuccess() {
-        userList.createUser(testUser);
+        userList.createUser(TEST_USER);
         try{
-            loginTesting.login(new LoginRequest("TestUser", "TestPassword"), userList, authList);
+            LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPassword"), userList, authList);
             // Assert that the user was signed in and given an authtoken
             Assertions.assertNotNull(authList.getAuthtokenList());
         } catch (DataAccessException | BadRequestException e) {
@@ -61,9 +61,9 @@ public class ServiceTests {
     @Order(2)
     @DisplayName("Login Incorrect Information")
     public void loginIncorrectInfo() {
-        userList.createUser(testUser);
+        userList.createUser(TEST_USER);
         // Assert that using the wrong password throws DataAccessException
-        Assertions.assertThrows(DataAccessException.class, () -> loginTesting.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
+        Assertions.assertThrows(DataAccessException.class, () -> LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
     }
 
     @Test
@@ -72,7 +72,7 @@ public class ServiceTests {
     public void registerSuccess() {
         expectedUserList.createUser(new UserData("TestUser", "TestPassword", "TestEmail"));
         try{
-            registerTesting.register(new RegisterRequest("TestUser", "TestPassword", "TestEmail"), userList, authList);
+            REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", "TestEmail"), userList, authList);
             // Assert that the user was created properly and that they were given an authtoken
             Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
             Assertions.assertNotNull(authList.getAuthtokenList());
@@ -87,9 +87,9 @@ public class ServiceTests {
     @DisplayName("Missing Register Data")
     public void missingRegisterData() {
         // Assert that missing data fields are caught by exceptions
-        Assertions.assertThrows(BadRequestException.class, () -> registerTesting.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () -> registerTesting.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () -> registerTesting.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
     }
 
     @Test
@@ -97,9 +97,9 @@ public class ServiceTests {
     @DisplayName("Valid Logout")
     public void logoutSucceeds() {
         // Successful login
-        userList.createUser(testUser);
-        authList.createAuth(testAuth);
-        logoutTesting.logout("example-auth", authList);
+        userList.createUser(TEST_USER);
+        authList.createAuth(TEST_AUTH);
+        LOGOUT_TESTING.logout("example-auth", authList);
 
         // Assert that the authList is now empty from logout
         Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
@@ -111,12 +111,12 @@ public class ServiceTests {
     @DisplayName("Logout Multiple Users")
     public void logoutTwice() {
         // Successful login
-        userList.createUser(testUser);
-        authList.createAuth(testAuth);
+        userList.createUser(TEST_USER);
+        authList.createAuth(TEST_AUTH);
         userList.createUser(new UserData("TestUser2", "TestPassword2", "Test2@gmail.com"));
         authList.createAuth(new AuthData("TestUser2", "example-auth2"));
-        logoutTesting.logout("example-auth", authList);
-        logoutTesting.logout("example-auth2", authList);
+        LOGOUT_TESTING.logout("example-auth", authList);
+        LOGOUT_TESTING.logout("example-auth2", authList);
         // Assert that the authList is now empty from logout
         Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
     }
@@ -126,7 +126,7 @@ public class ServiceTests {
     @DisplayName("Normal Creation")
     public void createGameSucceeds() {
         try {
-            createTesting.createGame(new CreateGameRequest("TestGame"), gameList);
+            CREATE_TESTING.createGame(new CreateGameRequest("TestGame"), gameList);
             // Assert that the game is successfully created
             Assertions.assertNotNull(gameList.getGame(1));
         } catch (BadRequestException e) {
@@ -140,19 +140,19 @@ public class ServiceTests {
     @DisplayName("Create with No Name")
     public void createGameBadRequest() {
         // Assert that games with no name are caught
-        Assertions.assertThrows(BadRequestException.class, () -> createTesting.createGame(new CreateGameRequest(null), gameList));
+        Assertions.assertThrows(BadRequestException.class, () -> CREATE_TESTING.createGame(new CreateGameRequest(null), gameList));
     }
 
     @Test
     @Order(9)
     @DisplayName("Join Normal Game")
     public void joinGameSucceeds() {
-        gameList.createGame(testGame);
-        userList.createUser(testUser);
-        authList.createAuth(testAuth);
+        gameList.createGame(TEST_GAME);
+        userList.createUser(TEST_USER);
+        authList.createAuth(TEST_AUTH);
         GameData expectedGame = new GameData(1, null, "TestUser", "Game1", new ChessGame());
         try {
-            joinTesting.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 1), "example-auth", gameList, authList);
+            JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 1), "example-auth", gameList, authList);
 
             // Assert user joined as black
             Assertions.assertEquals(expectedGame, gameList.getGame(1));
@@ -166,10 +166,10 @@ public class ServiceTests {
     @Order(10)
     @DisplayName("Join Negative Test")
     public void joinGameBadID() {
-        gameList.createGame(testGame);
-        authList.createAuth(testAuth);
+        gameList.createGame(TEST_GAME);
+        authList.createAuth(TEST_AUTH);
         // Try to join Game that doesn't exist. Should throw Bad Request Exception
-        Assertions.assertThrows(BadRequestException.class, () -> joinTesting.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
     }
 
     @Test
@@ -181,12 +181,12 @@ public class ServiceTests {
         GameData fourthGame = new GameData(4, "White", "Black", "Game4", new ChessGame());
 
         Collection<GameData> expectedList = new ArrayList<>();
-        expectedList.add(testGame);
+        expectedList.add(TEST_GAME);
         expectedList.add(secondGame);
         expectedList.add(thirdGame);
         expectedList.add(fourthGame);
 
-        gameList.createGame(testGame);
+        gameList.createGame(TEST_GAME);
         gameList.createGame(secondGame);
         gameList.createGame(thirdGame);
         gameList.createGame(fourthGame);
@@ -226,9 +226,9 @@ public class ServiceTests {
         userList.createUser(clearUserData);
         authList.createAuth(clearAuthData);
         gameList.createGame(clearGameData);
-        clearTesting.clearGames(gameList);
-        clearTesting.clearUsers(userList);
-        clearTesting.clearAuths(authList);
+        CLEAR_TESTING.clearGames(gameList);
+        CLEAR_TESTING.clearUsers(userList);
+        CLEAR_TESTING.clearAuths(authList);
         // Assert that all lists are empty
         Assertions.assertEquals(expectedGameList.listGames(), gameList.listGames());
         Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
@@ -240,9 +240,9 @@ public class ServiceTests {
     @DisplayName("Empty Before Clear")
     public void clearEmptyLists() {
         // Clear empty lists
-        clearTesting.clearGames(gameList);
-        clearTesting.clearUsers(userList);
-        clearTesting.clearAuths(authList);
+        CLEAR_TESTING.clearGames(gameList);
+        CLEAR_TESTING.clearUsers(userList);
+        CLEAR_TESTING.clearAuths(authList);
         // Assert that original lists are still empty and didn't throw errors
         Assertions.assertEquals(expectedGameList.listGames(), gameList.listGames());
         Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
