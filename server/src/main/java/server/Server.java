@@ -64,7 +64,7 @@ public class Server {
         javalin.stop();
     }
 
-    private static void handleLogin(Context ctx) throws DataAccessException, JsonParseException{
+    private static void handleLogin(Context ctx) throws DataAccessException, BadRequestException{
         // Handles logging in users
         // Possible handles errors
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
