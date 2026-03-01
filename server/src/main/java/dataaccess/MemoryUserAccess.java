@@ -1,5 +1,6 @@
 package dataaccess;
 
+import model.AuthData;
 import model.UserData;
 
 import java.util.ArrayList;
@@ -26,5 +27,9 @@ public class MemoryUserAccess implements UserAccess{
     public void clear() {
         // Clears users from database
         userList.clear();
+    }
+
+    public Collection<UserData> getUserList(){
+        return userList;
     }
 }

@@ -14,6 +14,10 @@ public class MemoryAuthTokenAccess implements AuthTokenAccess{
         authtokenList.add(newData);
     }
 
+    public Collection<AuthData> getAuthtokenList(){
+        return authtokenList;
+    }
+
     public AuthData getAuth(String authToken) {
         // If authtoken in authtokenList, return it
         for(AuthData checker : authtokenList){
