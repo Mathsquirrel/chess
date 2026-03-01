@@ -101,17 +101,17 @@ public class PieceMovesCalculator {
         allAvailableMoves.add(knightPromote);
     }
 
-    public void edgeCasePawnMoves(ChessBoard board, ChessPosition myPosition, int testRow, int testCol, ChessMove testMove, ChessPosition testPosition){
+    public void edgeCasePawnMoves(ChessBoard board, ChessPosition myPosition, int tRow, int tCol, ChessMove testMove, ChessPosition testPosition){
         int colorCorrector = 1;
         if(teamColor == BLACK){
             colorCorrector = -1;
         }
-        if(testRow == 8 || testRow == 1){
+        if(tRow == 8 || tRow == 1){
             promotionMoves(myPosition, testPosition);
         }else {
             allAvailableMoves.add(testMove);
         }
-        ChessPosition doublePushPosition = new ChessPosition(testRow + colorCorrector, testCol);
+        ChessPosition doublePushPosition = new ChessPosition(tRow + colorCorrector, tCol);
         if(((pieceRow == 2 && teamColor == WHITE) || (pieceRow == 7 && teamColor == BLACK)) && board.getPiece(doublePushPosition) == null){
             // If pawn hasn't moved, check for double push
             allAvailableMoves.add(new ChessMove(myPosition, doublePushPosition, null));
