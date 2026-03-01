@@ -63,7 +63,8 @@ public class ServiceTests {
     public void loginIncorrectInfo() {
         userList.createUser(TEST_USER);
         // Assert that using the wrong password throws DataAccessException
-        Assertions.assertThrows(DataAccessException.class, () -> LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
+        Assertions.assertThrows(DataAccessException.class, () ->
+                LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
     }
 
     @Test
@@ -87,9 +88,12 @@ public class ServiceTests {
     @DisplayName("Missing Register Data")
     public void missingRegisterData() {
         // Assert that missing data fields are caught by exceptions
-        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () -> REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                REGISTER_TESTING.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                REGISTER_TESTING.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
     }
 
     @Test
@@ -169,7 +173,8 @@ public class ServiceTests {
         gameList.createGame(TEST_GAME);
         authList.createAuth(TEST_AUTH);
         // Try to join Game that doesn't exist. Should throw Bad Request Exception
-        Assertions.assertThrows(BadRequestException.class, () -> JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
+        Assertions.assertThrows(BadRequestException.class, () ->
+                JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
     }
 
     @Test
