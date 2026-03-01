@@ -7,7 +7,8 @@ import model.*;
 import java.util.Objects;
 
 public class JoinGameService {
-    public void joinGame(JoinGameRequest joinRequest, String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList) throws BadRequestException, AlreadyTakenException {
+    public void joinGame(JoinGameRequest joinRequest, String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList)
+            throws BadRequestException, AlreadyTakenException {
         GameData gameRetrieved = gameList.getGame(joinRequest.gameID());
         if(gameRetrieved == null){
             // If game doesn't exist
@@ -20,12 +21,14 @@ public class JoinGameService {
             if(gameRetrieved.blackUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }
-            newPlayerJoined = new GameData(gameRetrieved.gameID(), gameRetrieved.whiteUsername(), username, gameRetrieved.gameName(), gameRetrieved.game());
+            newPlayerJoined = new GameData(gameRetrieved.gameID(), gameRetrieved.whiteUsername(), username,
+                    gameRetrieved.gameName(), gameRetrieved.game());
         }else if(Objects.equals(joinRequest.playerColor(), ChessGame.TeamColor.WHITE)) {
             if(gameRetrieved.whiteUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }
-            newPlayerJoined = new GameData(gameRetrieved.gameID(), username, gameRetrieved.blackUsername(), gameRetrieved.gameName(), gameRetrieved.game());
+            newPlayerJoined = new GameData(gameRetrieved.gameID(), username, gameRetrieved.blackUsername(),
+                    gameRetrieved.gameName(), gameRetrieved.game());
         }else {
             throw new BadRequestException("{Error: bad request}");
         }
