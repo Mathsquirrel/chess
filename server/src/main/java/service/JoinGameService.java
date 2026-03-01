@@ -1,5 +1,6 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.*;
 import model.*;
 
@@ -15,12 +16,12 @@ public class JoinGameService {
         // If game exists
         String username = authList.getAuth(authToken).username();
         GameData newPlayerJoined;
-        if(Objects.equals(joinRequest.playerColor(), "BLACK")){
+        if(Objects.equals(joinRequest.playerColor(), ChessGame.TeamColor.BLACK)){
             if(gameRetrieved.blackUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }
             newPlayerJoined = new GameData(gameRetrieved.gameID(), gameRetrieved.whiteUsername(), username, gameRetrieved.gameName(), gameRetrieved.game());
-        }else if(Objects.equals(joinRequest.playerColor(), "WHITE")) {
+        }else if(Objects.equals(joinRequest.playerColor(), ChessGame.TeamColor.WHITE)) {
             if(gameRetrieved.whiteUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }

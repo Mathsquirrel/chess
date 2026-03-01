@@ -1,14 +1,11 @@
 package server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonParseException;
 import dataaccess.*;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
 import service.*;
-
-import java.util.Collection;
 
 public class Server {
     static Gson serializer = new Gson();
@@ -29,12 +26,6 @@ public class Server {
         javalin.get("/game", Server::handleListGames);
 
         javalin.exception(BadRequestException.class, (e, ctx) -> {
-            ctx.status(400);
-            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
-            ctx.result(serializer.toJson(returnedError));
-        });
-
-        javalin.exception(JsonParseException.class, (e, ctx) -> {
             ctx.status(400);
             ErrorResponse returnedError = new ErrorResponse(e.getMessage());
             ctx.result(serializer.toJson(returnedError));
@@ -76,7 +67,7 @@ public class Server {
     private static void handleLogout(Context ctx) throws DataAccessException{
         // Handles logging user out
         // Possibly handles errors
-        String logoutRequest = serializer.fromJson(ctx.header("authorization"), String.class);
+        String logoutRequest = ctx.header("authorization");
         // Check authorization before logging out
         isAuthorized(logoutRequest);
         LogoutService logoutService = new LogoutService();
@@ -96,8 +87,7 @@ public class Server {
     private static void handleRegister(Context ctx) throws BadRequestException, AlreadyTakenException{
         // Handles registering a new user
         // Possible handles errors
-        RegisterRequest registerRequest;
-        registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
+        RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
         RegisterService registerService = new RegisterService();
         LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
         ctx.result(serializer.toJson(response));
@@ -107,10 +97,11 @@ public class Server {
         // Handles joining a game
         JoinGameRequest gameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
         // Check authorization before creating game
-        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
-        isAuthorized(authorization);
+        String joinAuthorization = ctx.header("authorization");
+        isAuthorized(joinAuthorization);
+
         JoinGameService joinService = new JoinGameService();
-        joinService.joinGame(gameRequest, authorization, gameList, authList);
+        joinService.joinGame(gameRequest, joinAuthorization, gameList, authList);
         ctx.result(serializer.toJson(null));
     }
 
@@ -118,7 +109,7 @@ public class Server {
         // Handles creating a new game
         // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
-        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
+        String authorization = ctx.header("authorization");
         CreateGameService createService = new CreateGameService();
         // Check authorization before creating game
         isAuthorized(authorization);
@@ -129,9 +120,7 @@ public class Server {
     private static void handleListGames(Context ctx){
         // Handles listing all games
         // Possible Handles errors
-        String listGamesRequest = serializer.fromJson(ctx.header("authorization"), String.class);
         ListGamesService listService = new ListGamesService();
-        // Check for authorization before handling
         ListGamesResponse response = listService.listGames(gameList);
         ctx.result(serializer.toJson(response));
     }
