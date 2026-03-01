@@ -2,14 +2,13 @@ package service;
 
 import dataaccess.*;
 import model.*;
-import org.eclipse.jetty.util.log.Log;
 
 import java.util.UUID;
 
 public class RegisterService {
 
-    public LoginRegisterResult register(RegisterRequest registration, MemoryUserAccess userList, MemoryAuthTokenAccess authList) throws BadRequestException, AlreadyTakenException {
-        LoginRegisterResult registerResult = new LoginRegisterResult(null, null);
+    public LoginRegisterResult register(RegisterRequest registration, MemoryUserAccess userList, MemoryAuthTokenAccess authList)
+            throws BadRequestException, AlreadyTakenException {
         if(registration.username() == null || registration.password() == null || registration.email() == null){
             throw new BadRequestException("{Error: bad request}");
         }
