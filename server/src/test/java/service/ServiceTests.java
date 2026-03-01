@@ -1,11 +1,10 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.MemoryAuthTokenAccess;
-import dataaccess.MemoryGameAccess;
-import dataaccess.MemoryUserAccess;
+import dataaccess.*;
 import org.junit.jupiter.api.*;
 import model.*;
+
 import java.util.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -15,16 +14,18 @@ public class ServiceTests {
     private static MemoryGameAccess gameList;
     private static MemoryUserAccess userList;
     private static MemoryAuthTokenAccess authList;
-    private static ClearService clearTestingService = new ClearService();
-    private static CreateGameService createGameTestingService = new CreateGameService();
-    private static JoinGameService joinGameTestingService = new JoinGameService();
-    private static ListGamesService listGamesTestingService = new ListGamesService();
-    private static LoginService loginTestingService = new LoginService();
-    private static LogoutService logoutTestingService = new LogoutService();
-    private static RegisterService registerTestingService = new RegisterService();
+    private static final ClearService clearTestingService = new ClearService();
+    private static final CreateGameService createGameTestingService = new CreateGameService();
+    private static final JoinGameService joinGameTestingService = new JoinGameService();
+    private static final LoginService loginTestingService = new LoginService();
+    private static final LogoutService logoutTestingService = new LogoutService();
+    private static final RegisterService registerTestingService = new RegisterService();
     private static MemoryGameAccess expectedGameList;
     private static MemoryUserAccess expectedUserList;
     private static MemoryAuthTokenAccess expectedAuthList;
+    private static final GameData testGame = new GameData(1, null, null, "Game1", new ChessGame());
+    private static final UserData testUser = new UserData("TestUser", "TestPassword", "Test@gmail.com");
+    private static final AuthData testAuth = new AuthData("TestUser", "example-auth");
 
 
 
@@ -40,161 +41,152 @@ public class ServiceTests {
     }
 
     // ### SERVICE-LEVEL TESTS ###
-/*
+
     @Test
     @Order(1)
-    @DisplayName("Normal User Login")
+    @DisplayName("Successful User Login")
     public void loginSuccess() {
-        TestAuthResult loginResult = serverFacade.login(existingUser);
-
-        assertHttpOk(loginResult);
-        Assertions.assertEquals(existingUser.getUsername(), loginResult.getUsername(),
-                "Response did not give the same username as user");
-        Assertions.assertNotNull(loginResult.getAuthToken(), "Response did not return authentication String");
-    }
-
-    @Test
-    @Order(2)
-    @DisplayName("Login Bad Request")
-    public void loginBadRequest() {
-        TestUser[] incompleteLoginRequests = {
-                new TestUser(null, existingUser.getPassword()),
-                new TestUser(existingUser.getUsername(), null),
-        };
-
-        for (TestUser incompleteLoginRequest : incompleteLoginRequests) {
-            TestAuthResult loginResult = serverFacade.login(incompleteLoginRequest);
-
-            assertHttpBadRequest(loginResult);
-            assertAuthFieldsMissing(loginResult);
+        userList.createUser(testUser);
+        try{
+            loginTestingService.login(new LoginRequest("TestUser", "TestPassword"), userList, authList);
+            // Assert that the user was signed in and given an authtoken
+            Assertions.assertNotNull(authList.getAuthtokenList());
+        } catch (DataAccessException | BadRequestException e) {
+            // If any exceptions are thrown, fail test
+            Assertions.fail();
         }
     }
 
     @Test
-    @Order(3)
-    @DisplayName("Normal User Registration")
-    public void registerSuccess() {
-        //submit register request
-        TestAuthResult registerResult = serverFacade.register(newUser);
+    @Order(2)
+    @DisplayName("Login Incorrect Information")
+    public void loginIncorrectInfo() {
+        userList.createUser(testUser);
+        // Assert that using the wrong password throws DataAccessException
+        Assertions.assertThrows(DataAccessException.class, () -> loginTestingService.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
+    }
 
-        assertHttpOk(registerResult);
-        Assertions.assertEquals(newUser.getUsername(), registerResult.getUsername(),
-                "Response did not have the same username as was registered");
-        Assertions.assertNotNull(registerResult.getAuthToken(), "Response did not contain an authentication string");
+    @Test
+    @Order(3)
+    @DisplayName("Successful User Registration")
+    public void registerSuccess() {
+        expectedUserList.createUser(new UserData("TestUser", "TestPassword", "TestEmail"));
+        try{
+            registerTestingService.register(new RegisterRequest("TestUser", "TestPassword", "TestEmail"), userList, authList);
+            // Assert that the user was created properly and that they were given an authtoken
+            Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
+            Assertions.assertNotNull(authList.getAuthtokenList());
+        }catch(BadRequestException | AlreadyTakenException e){
+            //If exception thrown, fail test
+            Assertions.fail();
+        }
     }
 
     @Test
     @Order(4)
-    @DisplayName("Re-Register User")
-    public void registerTwice() {
-        //submit register request trying to register existing user
-        TestAuthResult registerResult = serverFacade.register(existingUser);
-
-        assertHttpForbidden(registerResult);
-        assertAuthFieldsMissing(registerResult);
+    @DisplayName("Missing Register Data")
+    public void missingRegisterData() {
+        // Assert that missing data fields are caught by exceptions
+        Assertions.assertThrows(BadRequestException.class, () -> registerTestingService.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> registerTestingService.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
+        Assertions.assertThrows(BadRequestException.class, () -> registerTestingService.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
     }
 
     @Test
     @Order(5)
-    @DisplayName("Normal Logout")
-    public void logoutSuccess() {
-        //log out existing user
-        TestResult result = serverFacade.logout(existingAuth);
+    @DisplayName("Valid Logout")
+    public void logoutSucceeds() {
+        // Successful login
+        userList.createUser(testUser);
+        authList.createAuth(testAuth);
+        logoutTestingService.logout("example-auth", authList);
 
-        assertHttpOk(result);
+        // Assert that the authList is now empty from logout
+        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
     }
+
 
     @Test
     @Order(6)
-    @DisplayName("Invalid Auth Logout")
+    @DisplayName("Logout Multiple Users")
     public void logoutTwice() {
-        //log out user twice
-        //second logout should fail
-        serverFacade.logout(existingAuth);
-        TestResult result = serverFacade.logout(existingAuth);
-
-        assertHttpUnauthorized(result);
+        // Successful login
+        userList.createUser(testUser);
+        authList.createAuth(testAuth);
+        userList.createUser(new UserData("TestUser2", "TestPassword2", "Test2@gmail.com"));
+        authList.createAuth(new AuthData("TestUser2", "example-auth2"));
+        logoutTestingService.logout("example-auth", authList);
+        logoutTestingService.logout("example-auth2", authList);
+        // Assert that the authList is now empty from logout
+        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
     }
 
     @Test
     @Order(7)
-    @DisplayName("Valid Creation")
-    public void createGameSuccess() {
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
-
-        assertHttpOk(createResult);
-        Assertions.assertNotNull(createResult.getGameID(), "Result did not return a game ID");
-        Assertions.assertTrue(createResult.getGameID() > 0, "Result returned invalid game ID");
+    @DisplayName("Normal Creation")
+    public void createGameSucceeds() {
+        try {
+            createGameTestingService.createGame(new CreateGameRequest("TestGame"), gameList);
+            // Assert that the game is successfully created
+            Assertions.assertNotNull(gameList.getGame(1));
+        } catch (BadRequestException e) {
+            // If an error is thrown, fail the test
+            Assertions.fail();
+        }
     }
 
     @Test
     @Order(8)
-    @DisplayName("Create with Bad Authentication")
-    public void createGameUnauthorized() {
-        //log out user so auth is invalid
-        serverFacade.logout(existingAuth);
-
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
-
-        assertHttpUnauthorized(createResult);
-        Assertions.assertNull(createResult.getGameID(), "Bad result returned a game ID");
+    @DisplayName("Create with No Name")
+    public void createGameBadRequest() {
+        // Assert that games with no name are caught
+        Assertions.assertThrows(BadRequestException.class, () -> createGameTestingService.createGame(new CreateGameRequest(null), gameList));
     }
 
     @Test
     @Order(9)
-    @DisplayName("Join Created Game")
-    public void joinGameSuccess() {
-        //create game
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
+    @DisplayName("Join Normal Game")
+    public void joinGameSucceeds() {
+        gameList.createGame(testGame);
+        userList.createUser(testUser);
+        authList.createAuth(testAuth);
+        GameData expectedGame = new GameData(1, null, "TestUser", "Game1", new ChessGame());
+        try {
+            joinGameTestingService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 1), "example-auth", gameList, authList);
 
-        //join as white
-        TestJoinRequest joinRequest = new TestJoinRequest(ChessGame.TeamColor.WHITE, createResult.getGameID());
-
-        //try join
-        TestResult joinResult = serverFacade.joinPlayer(joinRequest, existingAuth);
-
-        //check
-        assertHttpOk(joinResult);
-
-        TestListResult listResult = serverFacade.listGames(existingAuth);
-
-        Assertions.assertNotNull(listResult.getGames(), "List result did not contain games");
-        Assertions.assertEquals(1, listResult.getGames().length, "List result is incorrect size");
-        Assertions.assertEquals(existingUser.getUsername(), listResult.getGames()[0].getWhiteUsername(),
-                "Username of joined player not present in list result");
-        Assertions.assertNull(listResult.getGames()[0].getBlackUsername(), "Username present on non-joined color");
+            // Assert user joined as black
+            Assertions.assertEquals(expectedGame, gameList.getGame(1));
+        }catch(AlreadyTakenException | BadRequestException e){
+            // If error is thrown, fail test
+            Assertions.fail();
+        }
     }
 
     @Test
     @Order(10)
-    @DisplayName("Join Bad Authentication")
-    public void joinGameUnauthorized() {
-        //create game
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
-
-        //try join as white
-        TestJoinRequest joinRequest = new TestJoinRequest(ChessGame.TeamColor.WHITE, createResult.getGameID());
-        TestResult joinResult = serverFacade.joinPlayer(joinRequest, existingAuth + "bad stuff");
-
-        //check
-        assertHttpUnauthorized(joinResult);
+    @DisplayName("Join Negative Test")
+    public void joinGameBadID() {
+        gameList.createGame(testGame);
+        authList.createAuth(testAuth);
+        // Try to join Game that doesn't exist. Should throw Bad Request Exception
+        Assertions.assertThrows(BadRequestException.class, () -> joinGameTestingService.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
     }
-*/
+
     @Test
     @Order(11)
     @DisplayName("List All Games")
     public void listAllGames() {
-        GameData firstGame = new GameData(1, "White", "Black", "Game1", new ChessGame());
         GameData secondGame = new GameData(2, "White", "Black", "Game2", new ChessGame());
         GameData thirdGame = new GameData(3, "White", "Black", "Game3", new ChessGame());
         GameData fourthGame = new GameData(4, "White", "Black", "Game4", new ChessGame());
+
         Collection<GameData> expectedList = new ArrayList<>();
-        expectedList.add(firstGame);
+        expectedList.add(testGame);
         expectedList.add(secondGame);
         expectedList.add(thirdGame);
         expectedList.add(fourthGame);
 
-        gameList.createGame(firstGame);
+        gameList.createGame(testGame);
         gameList.createGame(secondGame);
         gameList.createGame(thirdGame);
         gameList.createGame(fourthGame);
