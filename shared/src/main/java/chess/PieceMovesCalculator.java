@@ -101,7 +101,24 @@ public class PieceMovesCalculator {
         allAvailableMoves.add(knightPromote);
     }
 
-    public void validMovesPawn(ChessBoard board, ChessPosition myPosition, int[] horizontalMovement, int[] verticalMovement, boolean isContinuous){
+    public void edgeCasePawnMoves(ChessBoard board, ChessPosition myPosition, int testRow, int testCol, ChessMove testMove, ChessPosition testPosition){
+        int colorCorrector = 1;
+        if(teamColor == BLACK){
+            colorCorrector = -1;
+        }
+        if(testRow == 8 || testRow == 1){
+            promotionMoves(myPosition, testPosition);
+        }else {
+            allAvailableMoves.add(testMove);
+        }
+        ChessPosition doublePushPosition = new ChessPosition(testRow + colorCorrector, testCol);
+        if(((pieceRow == 2 && teamColor == WHITE) || (pieceRow == 7 && teamColor == BLACK)) && board.getPiece(doublePushPosition) == null){
+            // If pawn hasn't moved, check for double push
+            allAvailableMoves.add(new ChessMove(myPosition, doublePushPosition, null));
+        }
+    }
+
+    public void validMovesPawn(ChessBoard board, ChessPosition myPosition, int[] horizontalMovement, int[] verticalMovement){
         int testRow;
         int testCol;
         // Handle Pawn movement
@@ -120,18 +137,7 @@ public class PieceMovesCalculator {
                 if (horizontalMovement[i] == 0) {
                     // Check for regular push
                     if(board.getPiece(testPosition) == null) {
-
-                        // ALL IFS ON THIS ROW ARE TOO DEEP
-                        if(testRow == 8 || testRow == 1){
-                            promotionMoves(myPosition, testPosition);
-                        }else {
-                            allAvailableMoves.add(testMove);
-                        }
-                        ChessPosition doublePushPosition = new ChessPosition(testRow + colorCorrector, testCol);
-                        if(((pieceRow == 2 && teamColor == WHITE) || (pieceRow == 7 && teamColor == BLACK)) && board.getPiece(doublePushPosition) == null){
-                            // If pawn hasn't moved, check for double push
-                            allAvailableMoves.add(new ChessMove(myPosition, doublePushPosition, null));
-                        }
+                        edgeCasePawnMoves(board, myPosition, testRow, testCol, testMove, testPosition);
                     }
                 }
                 else if (board.getPiece(testPosition) != null && board.getPiece(testPosition).getTeamColor() != teamColor) {
@@ -192,7 +198,7 @@ public class PieceMovesCalculator {
                 }
             }
         }else{
-            validMovesPawn(board, myPosition, horizontalMovement, verticalMovement, false);
+            validMovesPawn(board, myPosition, horizontalMovement, verticalMovement);
         }
     }
 }
