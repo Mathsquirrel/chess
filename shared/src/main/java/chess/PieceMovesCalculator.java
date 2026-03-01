@@ -101,6 +101,51 @@ public class PieceMovesCalculator {
         allAvailableMoves.add(knightPromote);
     }
 
+    public void validMovesPawn(ChessBoard board, ChessPosition myPosition, int[] horizontalMovement, int[] verticalMovement, boolean isContinuous){
+        int testRow;
+        int testCol;
+        // Handle Pawn movement
+        int colorCorrector = 1;
+        if(teamColor == BLACK){
+            colorCorrector = -1;
+        }
+
+        for (int i = 0; i < horizontalMovement.length; i++) {
+            testRow = pieceRow + verticalMovement[i]*colorCorrector;
+            testCol = pieceCol + horizontalMovement[i];
+            if (testRow <= 8 && testRow > 0 && testCol <= 8 && testCol > 0) {
+                // While not out of bounds
+                ChessPosition testPosition = new ChessPosition(testRow, testCol);
+                ChessMove testMove = new ChessMove(myPosition, testPosition, null);
+                if (horizontalMovement[i] == 0) {
+                    // Check for regular push
+
+                    // TOO DEEPLY NESTED
+                    if(board.getPiece(testPosition) == null) {
+                        if(testRow == 8 || testRow == 1){
+                            promotionMoves(myPosition, testPosition);
+                        }else {
+                            allAvailableMoves.add(testMove);
+                        }
+                        ChessPosition doublePushPosition = new ChessPosition(testRow + colorCorrector, testCol);
+                        if(((pieceRow == 2 && teamColor == WHITE) || (pieceRow == 7 && teamColor == BLACK)) && board.getPiece(doublePushPosition) == null){
+                            // If pawn hasn't moved, check for double push
+                            allAvailableMoves.add(new ChessMove(myPosition, doublePushPosition, null));
+                        }
+                    }
+                }
+                else if (board.getPiece(testPosition) != null && board.getPiece(testPosition).getTeamColor() != teamColor) {
+                    // If piece can capture diagonally
+                    if(testRow == 8 || testRow == 1) {
+                        promotionMoves(myPosition, testPosition);
+                    }else{
+                        allAvailableMoves.add(testMove);
+                    }
+                }
+            }
+        }
+    }
+
     public void validMoves(ChessBoard board, ChessPosition myPosition, int[] horizontalMovement, int[] verticalMovement, boolean isContinuous) {
         int testRow;
         int testCol;
@@ -147,44 +192,7 @@ public class PieceMovesCalculator {
                 }
             }
         }else{
-            // Handle Pawn movement
-            int colorCorrector = 1;
-            if(teamColor == BLACK){
-                colorCorrector = -1;
-            }
-
-            for (int i = 0; i < horizontalMovement.length; i++) {
-                testRow = pieceRow + verticalMovement[i]*colorCorrector;
-                testCol = pieceCol + horizontalMovement[i];
-                if (testRow <= 8 && testRow > 0 && testCol <= 8 && testCol > 0) {
-                    // While not out of bounds
-                    ChessPosition testPosition = new ChessPosition(testRow, testCol);
-                    ChessMove testMove = new ChessMove(myPosition, testPosition, null);
-                    if (horizontalMovement[i] == 0) {
-                        // Check for regular push
-                        if(board.getPiece(testPosition) == null) {
-                            if(testRow == 8 || testRow == 1){
-                                promotionMoves(myPosition, testPosition);
-                            }else {
-                                allAvailableMoves.add(testMove);
-                            }
-                            ChessPosition doublePushPosition = new ChessPosition(testRow + colorCorrector, testCol);
-                            if(((pieceRow == 2 && teamColor == WHITE) || (pieceRow == 7 && teamColor == BLACK)) && board.getPiece(doublePushPosition) == null){
-                                // If pawn hasn't moved, check for double push
-                                allAvailableMoves.add(new ChessMove(myPosition, doublePushPosition, null));
-                            }
-                        }
-                    }
-                    else if (board.getPiece(testPosition) != null && board.getPiece(testPosition).getTeamColor() != teamColor) {
-                        // If piece can capture diagonally
-                        if(testRow == 8 || testRow == 1) {
-                            promotionMoves(myPosition, testPosition);
-                        }else{
-                            allAvailableMoves.add(testMove);
-                        }
-                    }
-                }
-            }
+            validMovesPawn(board, myPosition, horizontalMovement, verticalMovement, false);
         }
     }
 }
