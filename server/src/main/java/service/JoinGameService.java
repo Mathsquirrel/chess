@@ -16,12 +16,12 @@ public class JoinGameService {
         String username = authList.getAuth(authToken).username();
         GameData newPlayerJoined;
         if(Objects.equals(joinRequest.playerColor(), "BLACK")){
-            if(gameRetrieved.blackUsername() == null){
+            if(gameRetrieved.blackUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }
             newPlayerJoined = new GameData(gameRetrieved.gameID(), gameRetrieved.whiteUsername(), username, gameRetrieved.gameName(), gameRetrieved.game());
         }else if(Objects.equals(joinRequest.playerColor(), "WHITE")) {
-            if(gameRetrieved.whiteUsername() == null){
+            if(gameRetrieved.whiteUsername() != null){
                 throw new AlreadyTakenException("{Error: already taken}");
             }
             newPlayerJoined = new GameData(gameRetrieved.gameID(), username, gameRetrieved.blackUsername(), gameRetrieved.gameName(), gameRetrieved.game());
