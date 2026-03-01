@@ -128,6 +128,16 @@ public class ChessGame {
         return kingPosition;
     }
 
+    public boolean canCaptureKing(Collection<ChessMove> possibleMoves, ChessPosition kingPosition){
+        for(ChessMove move : possibleMoves){
+            // For each move in the available moves, check if they can capture the king
+            if(Objects.equals(move.getEndPosition(), kingPosition)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Determines if the given team is in check
      *
@@ -144,14 +154,10 @@ public class ChessGame {
 
             if(currentPiece != null && currentPiece.getTeamColor() != teamColor){
                 // If piece exists and is the opposite color
-
                 Collection<ChessMove> pieceMoves = currentPiece.pieceMoves(board, new ChessPosition(i, j));
-                for(ChessMove move : pieceMoves){
-                    // For each move in the available moves, check if they can capture the king
-                    if(Objects.equals(move.getEndPosition(), kingPosition)){
-                        inCheck = true;
-                        break outerloop;
-                    }
+                inCheck = canCaptureKing(pieceMoves, kingPosition);
+                if(inCheck){
+                    break outerloop;
                 }
             }
         }
