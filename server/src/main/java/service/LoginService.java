@@ -10,7 +10,8 @@ import java.util.UUID;
 
 public class LoginService {
 
-    public LoginRegisterResult login(LoginRequest loginAttempt, MemoryUserAccess userList, MemoryAuthTokenAccess authList) throws DataAccessException, BadRequestException {
+    public LoginRegisterResult login(LoginRequest loginAttempt, MemoryUserAccess userList, MemoryAuthTokenAccess authList)
+            throws DataAccessException, BadRequestException {
         UserData retrievedUser = userList.getUser(loginAttempt.username());
         if(loginAttempt.username() == null || loginAttempt.password() == null){
             // If empty form throw error
