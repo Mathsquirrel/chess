@@ -148,16 +148,18 @@ public class ChessGame {
         boolean inCheck = false;
         ChessPosition kingPosition = getKingPosition(teamColor);
         outerloop:
-        for (int i = 1; i < 9; i++) for (int j = 1; j < 9; j++){
-            ChessPiece currentPiece = board.getBoardState()[i - 1][j - 1];
-            // For each piece on the board
+        for (int i = 1; i < 9; i++){
+            for (int j = 1; j < 9; j++){
+                ChessPiece currentPiece = board.getBoardState()[i - 1][j - 1];
+                // For each piece on the board
 
-            if(currentPiece != null && currentPiece.getTeamColor() != teamColor){
-                // If piece exists and is the opposite color
-                Collection<ChessMove> pieceMoves = currentPiece.pieceMoves(board, new ChessPosition(i, j));
-                inCheck = canCaptureKing(pieceMoves, kingPosition);
-                if(inCheck){
-                    break outerloop;
+                if(currentPiece != null && currentPiece.getTeamColor() != teamColor){
+                    // If piece exists and is the opposite color
+                    Collection<ChessMove> pieceMoves = currentPiece.pieceMoves(board, new ChessPosition(i, j));
+                    inCheck = canCaptureKing(pieceMoves, kingPosition);
+                    if(inCheck){
+                        break outerloop;
+                    }
                 }
             }
         }
