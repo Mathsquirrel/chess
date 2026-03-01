@@ -93,7 +93,7 @@ public class Server {
         ctx.result(serializer.toJson(new LogoutResponse("{}")));
     }
 
-    private static void handleRegister(Context ctx) throws DataAccessException, AlreadyTakenException{
+    private static void handleRegister(Context ctx) throws BadRequestException, AlreadyTakenException{
         // Handles registering a new user
         // Possible handles errors
         RegisterRequest registerRequest;
