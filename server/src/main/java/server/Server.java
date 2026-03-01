@@ -105,12 +105,11 @@ public class Server {
 
     private static void handleJoinGame(Context ctx) throws DataAccessException, BadRequestException, AlreadyTakenException{
         // Handles joining a game
-        // In-Progress
         JoinGameRequest gameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
-        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
-        JoinGameService joinService = new JoinGameService();
         // Check authorization before creating game
+        String authorization = serializer.fromJson(ctx.header("authorization"), String.class);
         isAuthorized(authorization);
+        JoinGameService joinService = new JoinGameService();
         joinService.joinGame(gameRequest, authorization, gameList, authList);
         ctx.result(serializer.toJson(null));
     }
