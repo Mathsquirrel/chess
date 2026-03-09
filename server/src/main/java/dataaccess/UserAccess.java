@@ -1,7 +1,5 @@
 package dataaccess;
 import model.*;
-
-import javax.xml.crypto.Data;
 import java.util.Collection;
 
 public interface UserAccess {
