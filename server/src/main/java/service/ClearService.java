@@ -3,15 +3,15 @@ package service;
 import dataaccess.*;
 
 public class ClearService {
-    public void clearGames(MemoryGameAccess gameList){
+    public void clearGames(GameAccess gameList) {
         gameList.deleteGames();
     }
 
-    public void clearUsers(MemoryUserAccess userList){
+    public void clearUsers(UserAccess userList) {
         userList.clear();
     }
 
-    public void clearAuths(MemoryAuthTokenAccess authList){
+    public void clearAuths(AuthTokenAccess authList){
         authList.clearAuth();
     }
 }
