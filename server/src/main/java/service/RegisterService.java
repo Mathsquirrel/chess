@@ -1,14 +1,17 @@
 package service;
 
 import dataaccess.*;
+import exception.AlreadyTakenException;
+import exception.BadRequestException;
 import model.*;
 
+import exception.ResponseException;
 import java.util.UUID;
 
 public class RegisterService {
 
     public LoginRegisterResult register(RegisterRequest registration, UserAccess userList, AuthTokenAccess authList)
-            throws BadRequestException, AlreadyTakenException {
+            throws BadRequestException, AlreadyTakenException, ResponseException {
         if(registration.username() == null || registration.password() == null || registration.email() == null){
             throw new BadRequestException("{Error: bad request}");
         }

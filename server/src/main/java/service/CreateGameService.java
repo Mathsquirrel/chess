@@ -1,7 +1,7 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.BadRequestException;
+import exception.BadRequestException;
 import dataaccess.*;
 import model.*;
 

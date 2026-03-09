@@ -2,6 +2,9 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.*;
+import exception.AlreadyTakenException;
+import exception.BadRequestException;
+import exception.DataAccessException;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
@@ -9,13 +12,17 @@ import service.*;
 
 public class Server {
     static Gson serializer = new Gson();
-    static AuthTokenAccess authList = new MemoryAuthTokenAccess();
-    static GameAccess gameList = new MemoryGameAccess();
-    static UserAccess userList = new MemoryUserAccess();
+    static AuthTokenAccess authList;
+    static GameAccess gameList;
+    static UserAccess userList;
     private final Javalin javalin;
 
 
     public Server() {
+        authList = new MemoryAuthTokenAccess();
+        gameList = new MemoryGameAccess();
+        userList = new MemoryUserAccess();
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.post("/session", Server::handleLogin);
         javalin.delete("/session", Server::handleLogout);

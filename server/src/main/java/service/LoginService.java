@@ -1,5 +1,7 @@
 package service;
 import dataaccess.*;
+import exception.BadRequestException;
+import exception.DataAccessException;
 import model.*;
 
 import java.util.Objects;
