@@ -3,6 +3,7 @@ package dataaccess;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -83,5 +84,27 @@ public class SQLUserAccess implements UserAccess{
     private UserData readUser(ResultSet rs) throws SQLException {
         var json = rs.getString("json");
         return new Gson().fromJson(json, UserData.class);
+    }
+
+    void storeUserPassword(String username, String clearTextPassword) {
+        String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
+
+        // write the hashed password in database along with the user's other information
+        writeHashedPasswordToDatabase(username, hashedPassword);
+    }
+
+    public boolean verifyUser(String username, String providedClearTextPassword) throws ResponseException {
+        // read the previously hashed password from the database
+        var hashedPassword = readHashedPasswordFromDatabase(username);
+        return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
+    }
+
+    private void writeHashedPasswordToDatabase(String username, String hashedPassword){
+
+    }
+
+    private String readHashedPasswordFromDatabase(String username) throws ResponseException {
+        UserData user = getUser(username);
+        return user.password();
     }
 }

@@ -71,6 +71,8 @@ public class DatabaseManager {
             """
             CREATE TABLE IF NOT EXISTS  userData (
               `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`username`),
               INDEX(username)
@@ -79,6 +81,7 @@ public class DatabaseManager {
             """
             CREATE TABLE IF NOT EXISTS  authData (
               `authtoken` varchar(256) NOT NULL,
+              `username` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`authtoken`),
               INDEX(authtoken)
@@ -87,6 +90,9 @@ public class DatabaseManager {
             """
             CREATE TABLE IF NOT EXISTS  gameData (
               `gameID` int NOT NULL AUTO_INCREMENT,
+              `whiteUsername` varchar(256) NOT NULL,
+              `blackUsername` varchar(256) NOT NULL,
+              `gameName` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(gameID)
