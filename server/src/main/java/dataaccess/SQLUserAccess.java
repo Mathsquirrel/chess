@@ -2,6 +2,7 @@ package dataaccess;
 
 import com.google.gson.Gson;
 import exception.DataAccessException;
+import exception.ResponseException;
 import model.UserData;
 
 import java.sql.Connection;
@@ -23,7 +24,7 @@ public class SQLUserAccess implements UserAccess{
         return new Gson().fromJson(json, UserData.class);
     }
 
-    public UserData getUser(String requestedUsername) {
+    public UserData getUser(String requestedUsername) throws ResponseException {
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT * FROM userData WHERE username=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -35,7 +36,7 @@ public class SQLUserAccess implements UserAccess{
                 }
             }
         } catch (Exception e) {
-            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
         }
         return null;
     }
