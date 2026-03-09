@@ -74,23 +74,23 @@ public class DatabaseManager {
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`username`),
               INDEX(username)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            )
             """,
             """
             CREATE TABLE IF NOT EXISTS  authData (
               `authtoken` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`authtoken`),
-              INDEX(authtoken),
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+              INDEX(authtoken)
+            )
             """,
             """
             CREATE TABLE IF NOT EXISTS  gameData (
               `gameID` int NOT NULL AUTO_INCREMENT,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`gameID`),
-              INDEX(gameID),
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+              INDEX(gameID)
+            )
             """
     };
 
