@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public class RegisterService {
 
-    public LoginRegisterResult register(RegisterRequest registration, MemoryUserAccess userList, MemoryAuthTokenAccess authList)
+    public LoginRegisterResult register(RegisterRequest registration, UserAccess userList, AuthTokenAccess authList)
             throws BadRequestException, AlreadyTakenException {
         if(registration.username() == null || registration.password() == null || registration.email() == null){
             throw new BadRequestException("{Error: bad request}");

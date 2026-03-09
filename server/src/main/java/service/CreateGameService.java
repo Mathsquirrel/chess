@@ -2,11 +2,11 @@ package service;
 
 import chess.ChessGame;
 import dataaccess.BadRequestException;
-import dataaccess.MemoryGameAccess;
+import dataaccess.*;
 import model.*;
 
 public class CreateGameService {
-    public CreateGameResponse createGame(CreateGameRequest createGame, MemoryGameAccess gameList) throws BadRequestException{
+    public CreateGameResponse createGame(CreateGameRequest createGame, GameAccess gameList) throws BadRequestException{
         if(createGame.gameName() == null){
             throw new BadRequestException("{Error: bad request}");
         }

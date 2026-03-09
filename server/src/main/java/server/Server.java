@@ -9,9 +9,9 @@ import service.*;
 
 public class Server {
     static Gson serializer = new Gson();
-    static MemoryAuthTokenAccess authList = new MemoryAuthTokenAccess();
-    static MemoryGameAccess gameList = new MemoryGameAccess();
-    static MemoryUserAccess userList = new MemoryUserAccess();
+    static AuthTokenAccess authList = new MemoryAuthTokenAccess();
+    static GameAccess gameList = new MemoryGameAccess();
+    static UserAccess userList = new MemoryUserAccess();
     private final Javalin javalin;
 
 

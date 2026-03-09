@@ -7,7 +7,7 @@ import model.*;
 import java.util.Objects;
 
 public class JoinGameService {
-    public void joinGame(JoinGameRequest joinRequest, String authToken, MemoryGameAccess gameList, MemoryAuthTokenAccess authList)
+    public void joinGame(JoinGameRequest joinRequest, String authToken, GameAccess gameList, AuthTokenAccess authList)
             throws BadRequestException, AlreadyTakenException {
         GameData gameRetrieved = gameList.getGame(joinRequest.gameID());
         if(gameRetrieved == null){

@@ -1,8 +1,5 @@
 package service;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.MemoryAuthTokenAccess;
-import dataaccess.MemoryUserAccess;
+import dataaccess.*;
 import model.*;
 
 import java.util.Objects;
@@ -10,7 +7,7 @@ import java.util.UUID;
 
 public class LoginService {
 
-    public LoginRegisterResult login(LoginRequest loginAttempt, MemoryUserAccess userList, MemoryAuthTokenAccess authList)
+    public LoginRegisterResult login(LoginRequest loginAttempt, UserAccess userList, AuthTokenAccess authList)
             throws DataAccessException, BadRequestException {
         UserData retrievedUser = userList.getUser(loginAttempt.username());
         if(loginAttempt.username() == null || loginAttempt.password() == null){

@@ -7,12 +7,12 @@ import java.util.List;
 
 public class SQLUserAccess implements UserAccess{
     @Override
-    public void createUser(UserData u) throws DataAccessException {
+    public void createUser(UserData u) {
 
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username) {
         return null;
     }
 

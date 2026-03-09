@@ -2,9 +2,9 @@ package dataaccess;
 import model.AuthData;
 
 public interface AuthTokenAccess {
-    void createAuth(AuthData newData) throws DataAccessException;
-    AuthData getAuth(String authToken) throws DataAccessException;
-    void deleteAuth(AuthData ad) throws DataAccessException;
+    void createAuth(AuthData newData);
+    AuthData getAuth(String authToken);
+    void deleteAuth(AuthData ad);
     void clearAuth();
 
 }

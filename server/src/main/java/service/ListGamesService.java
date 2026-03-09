@@ -1,13 +1,13 @@
 package service;
 
-import dataaccess.MemoryGameAccess;
+import dataaccess.GameAccess;
 import model.*;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
 public class ListGamesService {
-    public ListGamesResponse listGames(MemoryGameAccess gameList) {
+    public ListGamesResponse listGames(GameAccess gameList) {
         Collection<ListGamesData> responseList = new ArrayList<>();
         for(GameData games : gameList.listGames()){
             // For each game in the list

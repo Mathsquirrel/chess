@@ -7,22 +7,22 @@ import java.util.List;
 
 public class SQLGameAccess implements GameAccess{
     @Override
-    public Collection<GameData> listGames() throws DataAccessException {
+    public Collection<GameData> listGames() {
         return List.of();
     }
 
     @Override
-    public void createGame(GameData gd) throws DataAccessException {
+    public void createGame(GameData gd) {
 
     }
 
     @Override
-    public GameData getGame(int gameID) throws DataAccessException {
+    public GameData getGame(int gameID) {
         return null;
     }
 
     @Override
-    public void updateGame(GameData gd) throws DataAccessException {
+    public void updateGame(GameData gd) {
 
     }
 
