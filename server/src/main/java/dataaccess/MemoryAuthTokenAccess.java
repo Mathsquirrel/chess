@@ -29,9 +29,9 @@ public class MemoryAuthTokenAccess implements AuthTokenAccess{
         return null;
     }
 
-    public void deleteAuth(AuthData ad) {
+    public void deleteAuth(AuthData newData) {
         // Removes "ad" from the authtokenList
-        authtokenList.remove(ad);
+        authtokenList.remove(newData);
     }
 
     public void clearAuth(){
