@@ -5,6 +5,7 @@ import dataaccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
+import exception.ResponseException;
 import io.javalin.*;
 import io.javalin.http.Context;
 import model.*;
@@ -19,10 +20,14 @@ public class Server {
 
 
     public Server() {
-        authList = new MemoryAuthTokenAccess();
-        gameList = new MemoryGameAccess();
-        userList = new MemoryUserAccess();
-
+        authList = new SQLAuthTokenAccess();
+        gameList = new SQLGameAccess();
+        userList = new SQLUserAccess();
+        try{
+            new DatabaseManager();
+        }catch(ResponseException e){
+            System.out.printf("Unable to start server: %s%n", e.getMessage());
+        }
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         javalin.post("/session", Server::handleLogin);
         javalin.delete("/session", Server::handleLogout);
@@ -50,6 +55,12 @@ public class Server {
             ctx.result(serializer.toJson(returnedError));
         });
 
+        javalin.exception(ResponseException.class, (e, ctx) -> {
+            ctx.status(500);
+            ErrorResponse returnedError = new ErrorResponse(e.getMessage());
+            ctx.result(serializer.toJson(returnedError));
+        });
+
         // Register your endpoints and exception handlers here.
     }
 
@@ -71,7 +82,7 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void handleLogout(Context ctx) throws DataAccessException{
+    private static void handleLogout(Context ctx) throws DataAccessException, ResponseException {
         // Handles logging user out
         // Possibly handles errors
         String logoutRequest = ctx.header("authorization");
@@ -91,7 +102,7 @@ public class Server {
         ctx.result(serializer.toJson(new LogoutResponse("{}")));
     }
 
-    private static void handleRegister(Context ctx) throws BadRequestException, AlreadyTakenException{
+    private static void handleRegister(Context ctx) throws BadRequestException, AlreadyTakenException, ResponseException {
         // Handles registering a new user
         // Possible handles errors
         RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
@@ -100,7 +111,7 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void handleJoinGame(Context ctx) throws DataAccessException, BadRequestException, AlreadyTakenException{
+    private static void handleJoinGame(Context ctx) throws DataAccessException, BadRequestException, AlreadyTakenException, ResponseException {
         // Handles joining a game
         JoinGameRequest gameRequest = serializer.fromJson(ctx.body(), JoinGameRequest.class);
         // Check authorization before creating game
@@ -112,7 +123,7 @@ public class Server {
         ctx.result(serializer.toJson(null));
     }
 
-    private static void handleCreateGame(Context ctx) throws DataAccessException, BadRequestException{
+    private static void handleCreateGame(Context ctx) throws DataAccessException, BadRequestException, ResponseException {
         // Handles creating a new game
         // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
@@ -124,7 +135,7 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void handleListGames(Context ctx) throws DataAccessException{
+    private static void handleListGames(Context ctx) throws DataAccessException, ResponseException {
         // Handles listing all games
         // Possible Handles errors
         String authorization = ctx.header("authorization");
@@ -135,7 +146,7 @@ public class Server {
         ctx.result(serializer.toJson(response));
     }
 
-    private static void isAuthorized(String authToken) throws DataAccessException{
+    private static void isAuthorized(String authToken) throws DataAccessException, ResponseException {
         if(authList.getAuth(authToken) == null){
             // If authtoken doesn't exist
             throw new DataAccessException("{ message: Error: unauthorized }");

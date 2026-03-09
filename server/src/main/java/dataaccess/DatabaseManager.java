@@ -1,6 +1,6 @@
 package dataaccess;
 
-import exception.DataAccessException;
+import exception.ResponseException;
 
 import java.sql.*;
 import java.util.Properties;
@@ -17,18 +17,8 @@ public class DatabaseManager {
     static {
         loadPropertiesFromResources();
     }
-
-    /**
-     * Creates the database if it does not already exist.
-     */
-    static public void createDatabase() throws DataAccessException {
-        var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
-        try (var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
-             var preparedStatement = conn.prepareStatement(statement)) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException ex) {
-            throw new DataAccessException("failed to create database", ex);
-        }
+    public DatabaseManager() throws ResponseException {
+        configureDatabase();
     }
 
     /**
@@ -43,14 +33,14 @@ public class DatabaseManager {
      * }
      * </code>
      */
-    static Connection getConnection() throws DataAccessException {
+    static Connection getConnection() throws ResponseException {
         try {
             //do not wrap the following line with a try-with-resources
             var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new DataAccessException("failed to get connection", ex);
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
         }
     }
 
@@ -104,7 +94,20 @@ public class DatabaseManager {
             """
     };
 
-    private void configureDatabase() throws DataAccessException {
+    /**
+     * Creates the database if it does not already exist.
+     */
+    static public void createDatabase() throws ResponseException {
+        var statement = "CREATE DATABASE IF NOT EXISTS " + databaseName;
+        try (var conn = DriverManager.getConnection(connectionUrl, dbUsername, dbPassword);
+             var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
+
+    private void configureDatabase() throws ResponseException {
         DatabaseManager.createDatabase();
         try (Connection conn = DatabaseManager.getConnection()) {
             for (String statement : createStatements) {
@@ -113,7 +116,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
         }
     }
 }
