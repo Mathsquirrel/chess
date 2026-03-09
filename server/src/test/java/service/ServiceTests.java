@@ -5,6 +5,7 @@ import dataaccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
+import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import model.*;
 
@@ -54,7 +55,7 @@ public class ServiceTests {
             LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPassword"), userList, authList);
             // Assert that the user was signed in and given an authtoken
             Assertions.assertNotNull(authList.getAuthtokenList());
-        } catch (DataAccessException | BadRequestException e) {
+        } catch (DataAccessException | BadRequestException | ResponseException e) {
             // If any exceptions are thrown, fail test
             Assertions.fail();
         }
@@ -80,7 +81,7 @@ public class ServiceTests {
             // Assert that the user was created properly and that they were given an authtoken
             Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
             Assertions.assertNotNull(authList.getAuthtokenList());
-        }catch(BadRequestException | AlreadyTakenException e){
+        }catch(BadRequestException | AlreadyTakenException | ResponseException e){
             //If exception thrown, fail test
             Assertions.fail();
         }
@@ -102,7 +103,7 @@ public class ServiceTests {
     @Test
     @Order(5)
     @DisplayName("Valid Logout")
-    public void logoutSucceeds() {
+    public void logoutSucceeds() throws ResponseException {
         // Successful login
         userList.createUser(TEST_USER);
         authList.createAuth(TEST_AUTH);
@@ -116,7 +117,7 @@ public class ServiceTests {
     @Test
     @Order(6)
     @DisplayName("Logout Multiple Users")
-    public void logoutTwice() {
+    public void logoutTwice() throws ResponseException {
         // Successful login
         userList.createUser(TEST_USER);
         authList.createAuth(TEST_AUTH);
@@ -136,7 +137,7 @@ public class ServiceTests {
             CREATE_TESTING.createGame(new CreateGameRequest("TestGame"), gameList);
             // Assert that the game is successfully created
             Assertions.assertNotNull(gameList.getGame(1));
-        } catch (BadRequestException e) {
+        } catch (BadRequestException | ResponseException e) {
             // If an error is thrown, fail the test
             Assertions.fail();
         }
@@ -163,7 +164,7 @@ public class ServiceTests {
 
             // Assert user joined as black
             Assertions.assertEquals(expectedGame, gameList.getGame(1));
-        }catch(AlreadyTakenException | BadRequestException e){
+        }catch(AlreadyTakenException | BadRequestException | ResponseException e){
             // If error is thrown, fail test
             Assertions.fail();
         }
@@ -226,7 +227,7 @@ public class ServiceTests {
     @Test
     @Order(13)
     @DisplayName("Clear Test")
-    public void clearData() {
+    public void clearData() throws ResponseException {
         // Add data into database to test clearing against
         GameData clearGameData = new GameData(1, "White", "Black", "ClearGame", new ChessGame());
         UserData clearUserData = new UserData("Goose", "Goose123", "Goose@gmail.com");
@@ -246,7 +247,7 @@ public class ServiceTests {
     @Test
     @Order(14)
     @DisplayName("Empty Before Clear")
-    public void clearEmptyLists() {
+    public void clearEmptyLists() throws ResponseException {
         // Clear empty lists
         CLEAR_TESTING.clearGames(gameList);
         CLEAR_TESTING.clearUsers(userList);

@@ -4,13 +4,14 @@ import chess.ChessGame;
 import dataaccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
+import exception.ResponseException;
 import model.*;
 
 import java.util.Objects;
 
 public class JoinGameService {
     public void joinGame(JoinGameRequest joinRequest, String authToken, GameAccess gameList, AuthTokenAccess authList)
-            throws BadRequestException, AlreadyTakenException {
+            throws BadRequestException, AlreadyTakenException, ResponseException {
         GameData gameRetrieved = gameList.getGame(joinRequest.gameID());
         if(gameRetrieved == null){
             // If game doesn't exist

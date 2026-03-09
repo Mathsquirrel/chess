@@ -2,6 +2,7 @@ package service;
 import dataaccess.*;
 import exception.BadRequestException;
 import exception.DataAccessException;
+import exception.ResponseException;
 import model.*;
 
 import java.util.Objects;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public class LoginService {
 
     public LoginRegisterResult login(LoginRequest loginAttempt, UserAccess userList, AuthTokenAccess authList)
-            throws DataAccessException, BadRequestException {
+            throws DataAccessException, BadRequestException, ResponseException {
         UserData retrievedUser = userList.getUser(loginAttempt.username());
         if(loginAttempt.username() == null || loginAttempt.password() == null){
             // If empty form throw error

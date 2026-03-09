@@ -73,7 +73,7 @@ public class Server {
         javalin.stop();
     }
 
-    private static void handleLogin(Context ctx) throws DataAccessException, BadRequestException{
+    private static void handleLogin(Context ctx) throws DataAccessException, BadRequestException, ResponseException {
         // Handles logging in users
         // Possible handles errors
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
@@ -93,7 +93,7 @@ public class Server {
         ctx.result(serializer.toJson(new LogoutResponse("{}")));
     }
 
-    private static void handleClear(Context ctx){
+    private static void handleClear(Context ctx) throws ResponseException {
         // Handles clearing the databases
         ClearService clearService = new ClearService();
         clearService.clearAuths(authList);
