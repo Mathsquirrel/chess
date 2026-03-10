@@ -6,7 +6,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class SQLGameAccess implements GameAccess{
-    @Override
+
     public Collection<GameData> listGames() {
         return List.of();
     }
