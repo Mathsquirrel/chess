@@ -13,16 +13,16 @@ import static java.sql.Types.NULL;
 public class SQLAuthTokenAccess implements AuthTokenAccess{
 
     public void createAuth(AuthData newData) throws ResponseException {
-        var statement = "INSERT INTO userData (username, json) VALUES (?, ?)";
+        var statement = "INSERT INTO authData (username, authToken, json) VALUES (?, ?, ?)";
         String json = new Gson().toJson(newData);
-        executeUpdate(statement, newData.authToken(), json);
+        executeUpdate(statement, newData.username(), newData.authToken(), json);
     }
 
-    public AuthData getAuth(String requestedUsername) throws ResponseException {
+    public AuthData getAuth(String authToken) throws ResponseException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, json FROM userData WHERE username=?";
+            var statement = "SELECT json FROM authData WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                ps.setString(1, requestedUsername);
+                ps.setString(1, authToken);
                 try (ResultSet rs = ps.executeQuery()) {
                     if (rs.next()) {
                         return readAuth(rs);

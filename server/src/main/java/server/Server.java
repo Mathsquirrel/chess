@@ -31,7 +31,7 @@ public class Server {
             userList = new MemoryUserAccess();
         }
         try{
-            new DatabaseManager();
+            DatabaseManager temp = new DatabaseManager();
         }catch(ResponseException e){
             System.out.printf("Unable to start server: %s%n", e.getMessage());
         }

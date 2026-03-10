@@ -28,22 +28,22 @@ public class SQLGameAccess implements GameAccess{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
         return result;
     }
 
     public void createGame(GameData gameData) throws ResponseException {
-        var statement = "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, chessGame, json) VALUES (?, ?, ?, ?)";
+        var statement = "INSERT INTO gameData (gameID, whiteUsername, blackUsername, gameName, chessGame, json) VALUES (?, ?, ?, ?, ?, ?)";
+        String chessData = new Gson().toJson(gameData.game());
         String json = new Gson().toJson(gameData);
-        String chessGame = new Gson().toJson(gameData.game());
         executeUpdate(statement, gameData.gameID(), gameData.whiteUsername(), gameData.blackUsername(),
-                gameData.gameName(), chessGame, json);
+                gameData.gameName(), chessData, json);
     }
 
     public GameData getGame(int gameID) throws ResponseException {
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT username, json FROM gameData WHERE gameID=?";
+            var statement = "SELECT json FROM gameData WHERE gameID=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setInt(1, gameID);
                 try (ResultSet rs = ps.executeQuery()) {
@@ -53,7 +53,7 @@ public class SQLGameAccess implements GameAccess{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
         return null;
     }
@@ -64,7 +64,9 @@ public class SQLGameAccess implements GameAccess{
     }
 
     public void updateGame(GameData gameData) throws ResponseException{
-        var statement = "UPDATE gameData SET chessGame,json = ?,? WHERE gameID = ? VALUES (?, ?, ?)";
+
+        //PROBABLY PROBLEM HERE WITH FORMATTING
+        var statement = "UPDATE gameData SET chessGame=?, json=? WHERE gameID=?";
         String json = new Gson().toJson(gameData);
         String chessGame = new Gson().toJson(gameData.game());
         executeUpdate(statement, chessGame, json, gameData.gameID());
@@ -80,8 +82,8 @@ public class SQLGameAccess implements GameAccess{
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
-                    if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param instanceof Integer p) ps.setInt(i + 1, p);
+                    if (param instanceof Integer p) ps.setInt(i + 1, p);
+                    else if (param instanceof String p) ps.setString(i + 1, p);
                     else if (param == null) ps.setNull(i + 1, NULL);
                 }
                 ps.executeUpdate();
@@ -93,7 +95,7 @@ public class SQLGameAccess implements GameAccess{
 
             }
         } catch (SQLException e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {unable to update database: %s, %s}", statement, e.getMessage()));
         }
     }
 }
