@@ -16,9 +16,11 @@ import static java.sql.Types.NULL;
 public class SQLUserAccess implements UserAccess{
 
     public void createUser(UserData user) throws ResponseException {
-        var statement = "INSERT INTO userData (username, json) VALUES (?, ?)";
+        var statement = "INSERT INTO userData (username, password, email, json) VALUES (?, ?, ?, ?)";
         String json = new Gson().toJson(user);
-        executeUpdate(statement, user.username(), json);
+        String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        executeUpdate(statement, user.username(), hashedPassword, user.email(), json);
+        // writeHashedPasswordToDatabase
     }
 
     public UserData getUser(String requestedUsername) throws ResponseException {
@@ -86,21 +88,10 @@ public class SQLUserAccess implements UserAccess{
         return new Gson().fromJson(json, UserData.class);
     }
 
-    void storeUserPassword(String username, String clearTextPassword) {
-        String hashedPassword = BCrypt.hashpw(clearTextPassword, BCrypt.gensalt());
-
-        // write the hashed password in database along with the user's other information
-        writeHashedPasswordToDatabase(username, hashedPassword);
-    }
-
-    public boolean verifyUser(String username, String providedClearTextPassword) throws ResponseException {
+    public boolean verifyPasswords(String username, String providedClearTextPassword) throws ResponseException {
         // read the previously hashed password from the database
         var hashedPassword = readHashedPasswordFromDatabase(username);
         return BCrypt.checkpw(providedClearTextPassword, hashedPassword);
-    }
-
-    private void writeHashedPasswordToDatabase(String username, String hashedPassword){
-
     }
 
     private String readHashedPasswordFromDatabase(String username) throws ResponseException {

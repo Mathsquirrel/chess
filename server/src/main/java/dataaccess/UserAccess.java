@@ -8,7 +8,8 @@ public interface UserAccess {
 
     // All user related access methods like getting User
     void createUser(UserData u) throws ResponseException;
-    UserData getUser(String username)throws ResponseException;
+    UserData getUser(String username) throws ResponseException;
     void clear()throws ResponseException;
-    Collection<UserData> getUserList()throws ResponseException;
+    Collection<UserData> getUserList() throws ResponseException;
+    boolean verifyPasswords(String username, String password) throws ResponseException;
 }

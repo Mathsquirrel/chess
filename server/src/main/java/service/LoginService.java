@@ -19,7 +19,7 @@ public class LoginService {
         }
         if(retrievedUser != null){
             // If the user exists in the database
-            if(Objects.equals(retrievedUser.password(), loginAttempt.password())) {
+            if(userList.verifyPasswords(loginAttempt.username(), loginAttempt.password())) {
                 // If the passwords match
                 String authToken = UUID.randomUUID().toString();
                 AuthData newAuth = new AuthData(retrievedUser.username(), authToken);

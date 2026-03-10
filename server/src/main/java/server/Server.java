@@ -20,9 +20,16 @@ public class Server {
 
 
     public Server() {
-        authList = new SQLAuthTokenAccess();
-        gameList = new SQLGameAccess();
-        userList = new SQLUserAccess();
+        boolean isSQL = false;
+        if(isSQL) {
+            authList = new SQLAuthTokenAccess();
+            gameList = new SQLGameAccess();
+            userList = new SQLUserAccess();
+        }else {
+            authList = new MemoryAuthTokenAccess();
+            gameList = new MemoryGameAccess();
+            userList = new MemoryUserAccess();
+        }
         try{
             new DatabaseManager();
         }catch(ResponseException e){

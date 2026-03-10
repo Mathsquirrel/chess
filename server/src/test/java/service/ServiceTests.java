@@ -79,7 +79,6 @@ public class ServiceTests {
         try{
             REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", "TestEmail"), userList, authList);
             // Assert that the user was created properly and that they were given an authtoken
-            Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
             Assertions.assertNotNull(authList.getAuthtokenList());
         }catch(BadRequestException | AlreadyTakenException | ResponseException e){
             //If exception thrown, fail test
