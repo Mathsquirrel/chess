@@ -17,8 +17,9 @@ public class SQLUserAccess implements UserAccess{
 
     public void createUser(UserData user) throws ResponseException {
         var statement = "INSERT INTO userData (username, password, email, json) VALUES (?, ?, ?, ?)";
-        String json = new Gson().toJson(user);
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
+        UserData hashedUser = new UserData(user.username(), hashedPassword, user.email());
+        String json = new Gson().toJson(hashedUser);
         executeUpdate(statement, user.username(), hashedPassword, user.email(), json);
     }
 

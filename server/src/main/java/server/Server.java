@@ -20,7 +20,7 @@ public class Server {
 
 
     public Server() {
-        boolean isSQL = false;
+        boolean isSQL = true;
         if(isSQL) {
             authList = new SQLAuthTokenAccess();
             gameList = new SQLGameAccess();
@@ -68,7 +68,6 @@ public class Server {
             ctx.result(serializer.toJson(returnedError));
         });
 
-        // Register your endpoints and exception handlers here.
     }
 
     public int run(int desiredPort) {
@@ -82,7 +81,6 @@ public class Server {
 
     private static void handleLogin(Context ctx) throws DataAccessException, BadRequestException, ResponseException {
         // Handles logging in users
-        // Possible handles errors
         LoginRequest loginRequest = serializer.fromJson(ctx.body(), LoginRequest.class);
         LoginService loginService = new LoginService();
         LoginRegisterResult response = loginService.login(loginRequest, userList, authList);
@@ -91,7 +89,6 @@ public class Server {
 
     private static void handleLogout(Context ctx) throws DataAccessException, ResponseException {
         // Handles logging user out
-        // Possibly handles errors
         String logoutRequest = ctx.header("authorization");
         // Check authorization before logging out
         isAuthorized(logoutRequest);
@@ -111,7 +108,6 @@ public class Server {
 
     private static void handleRegister(Context ctx) throws BadRequestException, AlreadyTakenException, ResponseException {
         // Handles registering a new user
-        // Possible handles errors
         RegisterRequest registerRequest = serializer.fromJson(ctx.body(), RegisterRequest.class);
         RegisterService registerService = new RegisterService();
         LoginRegisterResult response = registerService.register(registerRequest, userList, authList);
@@ -132,7 +128,6 @@ public class Server {
 
     private static void handleCreateGame(Context ctx) throws DataAccessException, BadRequestException, ResponseException {
         // Handles creating a new game
-        // Possible Handles errors
         CreateGameRequest gameName = serializer.fromJson(ctx.body(), CreateGameRequest.class);
         String authorization = ctx.header("authorization");
         CreateGameService createService = new CreateGameService();
@@ -144,7 +139,6 @@ public class Server {
 
     private static void handleListGames(Context ctx) throws DataAccessException, ResponseException {
         // Handles listing all games
-        // Possible Handles errors
         String authorization = ctx.header("authorization");
         // Check authorization before listing games
         isAuthorized(authorization);
