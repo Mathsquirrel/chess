@@ -10,5 +10,5 @@ public interface GameAccess {
     void createGame(GameData gd) throws BadRequestException, ResponseException;
     GameData getGame(int gameID) throws ResponseException;
     void updateGame(GameData gd) throws ResponseException;
-    void deleteGames();
+    void deleteGames() throws ResponseException;
 }

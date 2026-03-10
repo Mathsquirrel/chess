@@ -20,7 +20,6 @@ public class SQLUserAccess implements UserAccess{
         String json = new Gson().toJson(user);
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
         executeUpdate(statement, user.username(), hashedPassword, user.email(), json);
-        // writeHashedPasswordToDatabase
     }
 
     public UserData getUser(String requestedUsername) throws ResponseException {

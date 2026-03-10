@@ -4,7 +4,7 @@ import dataaccess.*;
 import exception.ResponseException;
 
 public class ClearService {
-    public void clearGames(GameAccess gameList) {
+    public void clearGames(GameAccess gameList) throws ResponseException {
         gameList.deleteGames();
     }
 

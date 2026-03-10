@@ -93,6 +93,7 @@ public class DatabaseManager {
               `whiteUsername` varchar(256) NOT NULL,
               `blackUsername` varchar(256) NOT NULL,
               `gameName` varchar(256) NOT NULL,
+              `chessGame` TEXT DEFAULT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`gameID`),
               INDEX(gameID)
