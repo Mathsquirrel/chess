@@ -40,20 +40,20 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ResponseException.Code.ServerError, "Error: {Could not create connection to database server.}");
         }
     }
 
     private static void loadPropertiesFromResources() {
         try (var propStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("db.properties")) {
             if (propStream == null) {
-                throw new Exception("Unable to load db.properties");
+                throw new Exception("Error: {Unable to load db.properties}");
             }
             Properties props = new Properties();
             props.load(propStream);
             loadProperties(props);
         } catch (Exception ex) {
-            throw new RuntimeException("unable to process db.properties", ex);
+            throw new RuntimeException("Error: {unable to process db.properties}", ex);
         }
     }
 
@@ -110,7 +110,7 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+            throw new ResponseException(ResponseException.Code.ServerError, "Error: {Could not create connection to database server.}");
         }
     }
 
@@ -123,7 +123,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to configure database: %s", ex.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to configure database: %s}", ex.getMessage()));
         }
     }
 }

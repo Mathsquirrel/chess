@@ -30,7 +30,7 @@ public class SQLAuthTokenAccess implements AuthTokenAccess{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
         return null;
     }
@@ -48,7 +48,7 @@ public class SQLAuthTokenAccess implements AuthTokenAccess{
                 ps.executeQuery();
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Unable to read data: %s", e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
     }
 
@@ -69,7 +69,7 @@ public class SQLAuthTokenAccess implements AuthTokenAccess{
 
             }
         } catch (SQLException e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("unable to update database: %s, %s", statement, e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to update database: %s, %s}", statement, e.getMessage()));
         }
     }
 
