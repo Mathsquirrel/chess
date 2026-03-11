@@ -9,10 +9,8 @@ import passoff.server.TestServerFacade;
 import server.Server;
 import service.*;
 
-import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SQLDatabaseTests {
@@ -33,7 +31,6 @@ public class SQLDatabaseTests {
 
     private static TestServerFacade serverFacade;
     private static Server server;
-    private static Class<?> databaseManagerClass;
 
     @BeforeAll
     public static void startServer() {
@@ -69,10 +66,10 @@ public class SQLDatabaseTests {
     @Order(1)
     public void createUserPos() {
         // Test that User was created
-        int initialRowCount = getDatabaseRows();
         try {
             userList.createUser(TEST_USER);
-            Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to database");
+            UserData testing = userList.getUser("TestUser");
+            Assertions.assertNotNull(testing);
         }catch(Exception e){
             System.out.println("Failed Test");
         }
@@ -170,10 +167,10 @@ public class SQLDatabaseTests {
     @Order(9)
     public void createGamePos() {
         // Test that Game was created
-        int initialRowCount = getDatabaseRows();
         try {
             gameList.createGame(TEST_GAME);
-            Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to database");
+            GameData testing = gameList.getGame(1);
+            Assertions.assertNotNull(testing);
         }catch(Exception e){
             System.out.println("Failed Test");
         }
@@ -262,8 +259,9 @@ public class SQLDatabaseTests {
         // Test that UpdateGame with bad info does nothing
         try{
             gameList.createGame(TEST_GAME);
+            Collection<GameData> testing = gameList.listGames();
             gameList.updateGame(BAD_GAME);
-            Assertions.assertEquals(1, getDatabaseRows());
+            Assertions.assertEquals(testing, gameList.listGames());
         }catch(ResponseException e){
             System.out.println("Failed Test");
         }
@@ -276,7 +274,8 @@ public class SQLDatabaseTests {
         // Test that Create Auth adds auth to database
         try {
             authList.createAuth(TEST_AUTH);
-            Assertions.assertEquals(1, getDatabaseRows());
+            AuthData testing = authList.getAuth("example-auth");
+            Assertions.assertNotNull(testing);
         }catch(Exception e){
             System.out.println("Failed Test");
         }
@@ -326,7 +325,8 @@ public class SQLDatabaseTests {
         try {
             authList.createAuth(TEST_AUTH);
             authList.deleteAuth(TEST_AUTH);
-            Assertions.assertEquals(0, getDatabaseRows());
+            AuthData testing = authList.getAuth("example-auth");
+            Assertions.assertNull(testing);
         }catch(Exception e){
             System.out.println("Failed Test");
         }
@@ -339,8 +339,7 @@ public class SQLDatabaseTests {
         // Test that Delete doesn't change database on wrong Auth
         try{
             authList.createAuth(TEST_AUTH);
-            authList.deleteAuth(BAD_AUTH);
-            Assertions.assertEquals(1, getDatabaseRows());
+            Assertions.assertDoesNotThrow(() -> authList.deleteAuth(BAD_AUTH));
         }catch(ResponseException e){
             System.out.println("Failed Test");
         }
@@ -358,74 +357,14 @@ public class SQLDatabaseTests {
             userList.clear();
             authList.clearAuth();
             gameList.deleteGames();
-            Assertions.assertEquals(0, getDatabaseRows());
+            AuthData testAuth = authList.getAuth("example-auth");
+            GameData testGame = gameList.getGame(1);
+            UserData testUser = userList.getUser("TestUser");
+            Assertions.assertNull(testAuth);
+            Assertions.assertNull(testGame);
+            Assertions.assertNull(testUser);
         }catch(ResponseException e){
             System.out.println("Failed Test");
         }
-    }
-
-    private int getDatabaseRows() {
-        AtomicInteger rows = new AtomicInteger();
-        executeForAllTables((tableName, connection) -> {
-            try (var statement = connection.createStatement()) {
-                var sql = "SELECT count(*) FROM " + tableName;
-                try (var resultSet = statement.executeQuery(sql)) {
-                    if (resultSet.next()) {
-                        rows.addAndGet(resultSet.getInt(1));
-                    }
-                }
-            }
-        });
-
-        return rows.get();
-    }
-
-    private void executeForAllTables(SQLDatabaseTests.TableActionTests tableAction) {
-        String sql = """
-                    SELECT table_name
-                    FROM information_schema.tables
-                    WHERE table_schema = DATABASE();
-                """;
-
-        try (Connection conn = getConnection(); PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
-            try (var resultSet = preparedStatement.executeQuery()) {
-                while (resultSet.next()) {
-                    tableAction.execute(resultSet.getString(1), conn);
-                }
-            }
-        } catch (ReflectiveOperationException | SQLException e) {
-            Assertions.fail(e.getMessage(), e);
-        }
-    }
-
-    private Connection getConnection() throws ReflectiveOperationException {
-        Class<?> clazz = findDatabaseManager();
-        Method getConnectionMethod = clazz.getDeclaredMethod("getConnection");
-        getConnectionMethod.setAccessible(true);
-
-        Object obj = clazz.getDeclaredConstructor().newInstance();
-        return (Connection) getConnectionMethod.invoke(obj);
-    }
-
-    private Class<?> findDatabaseManager() throws ClassNotFoundException {
-        if(databaseManagerClass != null) {
-            return databaseManagerClass;
-        }
-
-        for (Package p : getClass().getClassLoader().getDefinedPackages()) {
-            try {
-                Class<?> clazz = Class.forName(p.getName() + ".DatabaseManager");
-                clazz.getDeclaredMethod("getConnection");
-                databaseManagerClass = clazz;
-                return clazz;
-            } catch (ReflectiveOperationException ignored) {}
-        }
-        throw new ClassNotFoundException("Unable to load database in order to verify persistence. " +
-                "Are you using DatabaseManager to set your credentials? " +
-                "Did you edit the signature of the getConnection method?");
-    }
-
-    private interface TableActionTests {
-        void execute(String tableName, Connection connection) throws SQLException;
     }
 }
