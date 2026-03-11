@@ -7,14 +7,7 @@ public class ResponseException extends Exception {
         ClientError,
     }
 
-    final private Code code;
-
-    public ResponseException(Code code, String message) {
+    public ResponseException(String message) {
         super(message);
-        this.code = code;
-    }
-
-    public Code code() {
-        return code;
     }
 }
