@@ -3,12 +3,12 @@ package dataaccess;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.AuthData;
-
 import java.sql.Connection;
 import java.sql.*;
 
-import static java.sql.Statement.RETURN_GENERATED_KEYS;
-import static java.sql.Types.NULL;
+import dataaccess.SQLUserAccess.*;
+
+import static dataaccess.SQLUserAccess.executeUpdate;
 
 public class SQLAuthTokenAccess implements AuthTokenAccess{
 
@@ -49,31 +49,6 @@ public class SQLAuthTokenAccess implements AuthTokenAccess{
             }
         } catch (Exception e) {
             throw new ResponseException(String.format("Error: {Unable to read data: %s}", e.getMessage()));
-        }
-    }
-
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
-        try (Connection conn = DatabaseManager.getConnection()) {
-            try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
-                for (int i = 0; i < params.length; i++) {
-                    Object param = params[i];
-                    if (param instanceof String p){
-                        ps.setString(i + 1, p);
-                    }
-                    else if (param == null){
-                        ps.setNull(i + 1, NULL);
-                    }
-                }
-                ps.executeUpdate();
-
-                ResultSet rs = ps.getGeneratedKeys();
-                if (rs.next()) {
-                    rs.getInt(1);
-                }
-
-            }
-        } catch (SQLException e) {
-            throw new ResponseException(String.format("Error: {Unable to update database: %s, %s}", statement, e.getMessage()));
         }
     }
 

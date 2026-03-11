@@ -62,7 +62,7 @@ public class SQLUserAccess implements UserAccess{
         return result;
     }
 
-    private void executeUpdate(String statement, Object... params) throws ResponseException {
+    public static void executeUpdate(String statement, Object... params) throws ResponseException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
