@@ -45,7 +45,7 @@ public class SQLAuthTokenAccess implements AuthTokenAccess{
             var statement = "DELETE FROM authData WHERE authToken=?";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 ps.setString(1, removeData.authToken());
-                ps.executeQuery();
+                ps.executeUpdate();
             }
         } catch (Exception e) {
             throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));

@@ -64,8 +64,6 @@ public class SQLGameAccess implements GameAccess{
     }
 
     public void updateGame(GameData gameData) throws ResponseException{
-
-        //PROBABLY PROBLEM HERE WITH FORMATTING
         var statement = "UPDATE gameData SET chessGame=?, json=? WHERE gameID=?";
         String json = new Gson().toJson(gameData);
         String chessGame = new Gson().toJson(gameData.game());

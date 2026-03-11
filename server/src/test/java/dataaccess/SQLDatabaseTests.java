@@ -1,13 +1,13 @@
 package dataaccess;
 
 import chess.ChessGame;
-import dataaccess.*;
 import exception.AlreadyTakenException;
 import exception.BadRequestException;
 import exception.DataAccessException;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import model.*;
+import service.*;
 
 import java.util.*;
 
@@ -15,9 +15,9 @@ import java.util.*;
 public class SQLDatabaseTests {
 /*
     // ### TESTING SETUP/CLEANUP ###
-    private static MemoryGameAccess gameList;
-    private static MemoryUserAccess userList;
-    private static MemoryAuthTokenAccess authList;
+    private static SQLGameAccess gameList;
+    private static SQLUserAccess userList;
+    private static SQLAuthTokenAccess authList;
     private static final ClearService CLEAR_TESTING = new ClearService();
     private static final CreateGameService CREATE_TESTING = new CreateGameService();
     private static final JoinGameService JOIN_TESTING = new JoinGameService();
@@ -36,16 +36,36 @@ public class SQLDatabaseTests {
     @BeforeEach
     public void init() {
         // Reset server
-        gameList = new MemoryGameAccess();
-        userList = new MemoryUserAccess();
-        authList = new MemoryAuthTokenAccess();
+        // Test SQL results against already verified Memory Results
+        gameList = new SQLGameAccess();
+        userList = new SQLUserAccess();
+        authList = new SQLAuthTokenAccess();
         expectedGameList = new MemoryGameAccess();
         expectedUserList = new MemoryUserAccess();
         expectedAuthList = new MemoryAuthTokenAccess();
     }
+*/
 
-    // ### SERVICE-LEVEL TESTS ###
+    // ### DAO-TESTS ###
+/*  getUser
+    getUserList
+    verifyPasswords
+    clear()
+    createUser()
 
+    listGames
+    createGame
+    getGame
+    updateGame
+    deleteGame
+
+    createAuth
+    getAuth
+    clearAuth
+    deleteAuth
+ */
+
+    /*
     @Test
     @Order(1)
     @DisplayName("Successful User Login")

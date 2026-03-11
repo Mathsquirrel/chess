@@ -80,8 +80,8 @@ public class DatabaseManager {
             """,
             """
             CREATE TABLE IF NOT EXISTS  authData (
-              `authtoken` varchar(256) NOT NULL,
               `username` varchar(256) NOT NULL,
+              `authtoken` varchar(256) NOT NULL,
               `json` TEXT DEFAULT NULL,
               PRIMARY KEY (`authtoken`),
               INDEX(authtoken)
