@@ -28,7 +28,7 @@ public class SQLDatabaseTests {
     private static final UserData TEST_USER = new UserData("TestUser", "TestPassword", "Test@gmail.com");
     private static final UserData BAD_USER = new UserData("BadUser", "badUserPassword", null);
     private static final AuthData TEST_AUTH = new AuthData("TestUser", "example-auth");
-    private static final AuthData BAD_AUTH = new AuthData(null, "example-auth");
+    private static final AuthData BAD_AUTH = new AuthData(null, null);
 
 
     private static TestServerFacade serverFacade;
@@ -333,8 +333,8 @@ public class SQLDatabaseTests {
     }
 
     @Test
-    @DisplayName("Get Auth Negative Test")
-    @Order(20)
+    @DisplayName("Delete Auth Negative Test")
+    @Order(22)
     public void deleteAuthNeg() {
         // Test that Delete doesn't change database on wrong Auth
         try{
