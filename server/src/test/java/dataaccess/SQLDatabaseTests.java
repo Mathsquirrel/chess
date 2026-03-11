@@ -5,7 +5,7 @@ import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import model.*;
 import passoff.model.*;
-import passoff.server.TestServerFacade;
+import passoff.server.*;
 import server.Server;
 import service.*;
 
@@ -30,13 +30,12 @@ public class SQLDatabaseTests {
 
 
     private static TestServerFacade serverFacade;
-    private static Server server;
+    private static Server sqlServer;
 
     @BeforeAll
-    public static void startServer() {
-        server = new Server();
-        var port = server.run(0);
-        System.out.println("Started test HTTP server on " + port);
+    public static void startSQLServer() {
+        sqlServer = new Server();
+        var port = sqlServer.run(0);
 
         serverFacade = new TestServerFacade("localhost", Integer.toString(port));
     }
@@ -56,7 +55,7 @@ public class SQLDatabaseTests {
 
     @AfterAll
     static void stopServer() {
-        server.stop();
+        sqlServer.stop();
     }
 
     // ### DAO-TESTS ###
