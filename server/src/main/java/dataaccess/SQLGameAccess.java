@@ -28,7 +28,7 @@ public class SQLGameAccess implements GameAccess{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
+            throw new ResponseException(String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
         return result;
     }
@@ -53,7 +53,7 @@ public class SQLGameAccess implements GameAccess{
                 }
             }
         } catch (Exception e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {Unable to read data: %s}", e.getMessage()));
+            throw new ResponseException(String.format("Error: {Unable to read data: %s}", e.getMessage()));
         }
         return null;
     }
@@ -99,8 +99,7 @@ public class SQLGameAccess implements GameAccess{
 
             }
         } catch (SQLException e) {
-            throw new ResponseException(ResponseException.Code.ServerError,
-                    String.format("Error: {unable to update database: %s, %s}", statement, e.getMessage()));
+            throw new ResponseException(String.format("Error: {unable to update database: %s, %s}", statement, e.getMessage()));
         }
     }
 }
