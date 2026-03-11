@@ -1,281 +1,431 @@
 package dataaccess;
 
 import chess.ChessGame;
-import exception.AlreadyTakenException;
-import exception.BadRequestException;
-import exception.DataAccessException;
 import exception.ResponseException;
 import org.junit.jupiter.api.*;
 import model.*;
+import passoff.model.*;
+import passoff.server.TestServerFacade;
+import server.Server;
 import service.*;
 
+import java.lang.reflect.Method;
+import java.sql.*;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class SQLDatabaseTests {
-/*
+
     // ### TESTING SETUP/CLEANUP ###
     private static SQLGameAccess gameList;
     private static SQLUserAccess userList;
     private static SQLAuthTokenAccess authList;
-    private static final ClearService CLEAR_TESTING = new ClearService();
-    private static final CreateGameService CREATE_TESTING = new CreateGameService();
-    private static final JoinGameService JOIN_TESTING = new JoinGameService();
-    private static final LoginService LOGIN_TESTING = new LoginService();
-    private static final LogoutService LOGOUT_TESTING = new LogoutService();
-    private static final RegisterService REGISTER_TESTING = new RegisterService();
-    private static MemoryGameAccess expectedGameList;
-    private static MemoryUserAccess expectedUserList;
-    private static MemoryAuthTokenAccess expectedAuthList;
     private static final GameData TEST_GAME = new GameData(1, null, null, "Game1", new ChessGame());
+    private static final GameData UPDATED_GAME = new GameData(1, null, "BLACK PLAYER", "Game1", new ChessGame());
+
+    private static final GameData BAD_GAME = new GameData(1000, null, null, null, new ChessGame());
     private static final UserData TEST_USER = new UserData("TestUser", "TestPassword", "Test@gmail.com");
+    private static final UserData BAD_USER = new UserData("BadUser", "badUserPassword", null);
     private static final AuthData TEST_AUTH = new AuthData("TestUser", "example-auth");
+    private static final AuthData BAD_AUTH = new AuthData(null, "example-auth");
 
 
+    private static TestServerFacade serverFacade;
+    private static Server server;
+    private static Class<?> databaseManagerClass;
+
+    @BeforeAll
+    public static void startServer() {
+        server = new Server();
+        var port = server.run(0);
+        System.out.println("Started test HTTP server on " + port);
+
+        serverFacade = new TestServerFacade("localhost", Integer.toString(port));
+    }
+
+    @BeforeEach
+    public void setUp() {
+        serverFacade.clear();
+    }
 
     @BeforeEach
     public void init() {
-        // Reset server
-        // Test SQL results against already verified Memory Results
+        // Setup Classes for DAOs
         gameList = new SQLGameAccess();
         userList = new SQLUserAccess();
         authList = new SQLAuthTokenAccess();
-        expectedGameList = new MemoryGameAccess();
-        expectedUserList = new MemoryUserAccess();
-        expectedAuthList = new MemoryAuthTokenAccess();
     }
-*/
+
+    @AfterAll
+    static void stopServer() {
+        server.stop();
+    }
 
     // ### DAO-TESTS ###
-/*  getUser
-    getUserList
-    verifyPasswords
-    clear()
-    createUser()
 
-    listGames
-    createGame
-    getGame
-    updateGame
-    deleteGame
-
-    createAuth
-    getAuth
-    clearAuth
-    deleteAuth
- */
-
-    /*
     @Test
+    @DisplayName("Create User Positive Test")
     @Order(1)
-    @DisplayName("Successful User Login")
-    public void loginSuccess() {
-        userList.createUser(TEST_USER);
-        try{
-            LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPassword"), userList, authList);
-            // Assert that the user was signed in and given an authtoken
-            Assertions.assertNotNull(authList.getAuthtokenList());
-        } catch (DataAccessException | BadRequestException | ResponseException e) {
-            // If any exceptions are thrown, fail test
-            Assertions.fail();
+    public void createUserPos() {
+        // Test that User was created
+        int initialRowCount = getDatabaseRows();
+        try {
+            userList.createUser(TEST_USER);
+            Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to database");
+        }catch(Exception e){
+            System.out.println("Failed Test");
         }
     }
 
     @Test
+    @DisplayName("Create User Negative Test")
     @Order(2)
-    @DisplayName("Login Incorrect Information")
-    public void loginIncorrectInfo() {
-        userList.createUser(TEST_USER);
-        // Assert that using the wrong password throws DataAccessException
-        Assertions.assertThrows(DataAccessException.class, () ->
-                LOGIN_TESTING.login(new LoginRequest("TestUser", "TestPasswordWrong"), userList, authList));
+    public void createUserNeg() {
+        // Test that User with Missing Credentials not Registered
+        Assertions.assertThrows(ResponseException.class, () -> userList.createUser(BAD_USER));
     }
 
     @Test
+    @DisplayName("Get User Positive Test")
     @Order(3)
-    @DisplayName("Successful User Registration")
-    public void registerSuccess() {
-        expectedUserList.createUser(new UserData("TestUser", "TestPassword", "TestEmail"));
-        try{
-            REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", "TestEmail"), userList, authList);
-            // Assert that the user was created properly and that they were given an authtoken
-            Assertions.assertNotNull(authList.getAuthtokenList());
-        }catch(BadRequestException | AlreadyTakenException | ResponseException e){
-            //If exception thrown, fail test
-            Assertions.fail();
+    public void getUserPos() {
+        // Test that User can be retrieved
+        try {
+            userList.createUser(TEST_USER);
+            UserData retrievedUser = userList.getUser("TestUser");
+            Assertions.assertNotNull(retrievedUser);
+        }catch(Exception e){
+            System.out.println("Failed Test");
         }
     }
 
     @Test
+    @DisplayName("Get User Negative Test")
     @Order(4)
-    @DisplayName("Missing Register Data")
-    public void missingRegisterData() {
-        // Assert that missing data fields are caught by exceptions
-        Assertions.assertThrows(BadRequestException.class, () ->
-                REGISTER_TESTING.register(new RegisterRequest("TestUser", null, "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () ->
-                REGISTER_TESTING.register(new RegisterRequest(null, "TestPassword", "TestUser@gmail.com"), userList, authList));
-        Assertions.assertThrows(BadRequestException.class, () ->
-                REGISTER_TESTING.register(new RegisterRequest("TestUser", "TestPassword", null), userList, authList));
+    public void getUserNeg() {
+        // Test that User Not registered returns null
+        try{
+            UserData retrievedUser = userList.getUser("FakeUser");
+            Assertions.assertNull(retrievedUser);
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
     }
 
     @Test
+    @DisplayName("Get UserList Positive Test")
     @Order(5)
-    @DisplayName("Valid Logout")
-    public void logoutSucceeds() throws ResponseException {
-        // Successful login
-        userList.createUser(TEST_USER);
-        authList.createAuth(TEST_AUTH);
-        LOGOUT_TESTING.logout("example-auth", authList);
-
-        // Assert that the authList is now empty from logout
-        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
+    public void getUserListPos() {
+        // Test that UserList can be retrieved
+        try {
+            userList.createUser(TEST_USER);
+            Assertions.assertNotNull(userList.getUserList());
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
     }
 
-
     @Test
+    @DisplayName("Get UserList No Users Test")
     @Order(6)
-    @DisplayName("Logout Multiple Users")
-    public void logoutTwice() throws ResponseException {
-        // Successful login
-        userList.createUser(TEST_USER);
-        authList.createAuth(TEST_AUTH);
-        userList.createUser(new UserData("TestUser2", "TestPassword2", "Test2@gmail.com"));
-        authList.createAuth(new AuthData("TestUser2", "example-auth2"));
-        LOGOUT_TESTING.logout("example-auth", authList);
-        LOGOUT_TESTING.logout("example-auth2", authList);
-        // Assert that the authList is now empty from logout
-        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
+    public void getUserListEmpty() {
+        // Test that UserList returns nothing if no users
+        try{
+            Collection<UserData> checkingList = new ArrayList<>();
+            Assertions.assertEquals(checkingList, userList.getUserList());
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
     }
 
     @Test
+    @DisplayName("Verify Passwords Positive Test")
     @Order(7)
-    @DisplayName("Normal Creation")
-    public void createGameSucceeds() {
+    public void verifyPasswordsPos() {
+        // Test that a User's password matches the hash
         try {
-            CREATE_TESTING.createGame(new CreateGameRequest("TestGame"), gameList);
-            // Assert that the game is successfully created
-            Assertions.assertNotNull(gameList.getGame(1));
-        } catch (BadRequestException | ResponseException e) {
-            // If an error is thrown, fail the test
-            Assertions.fail();
+            userList.createUser(TEST_USER);
+            Assertions.assertTrue(userList.verifyPasswords("TestUser", "TestPassword"));
+        }catch(Exception e){
+            System.out.println("Failed Test");
         }
     }
 
     @Test
+    @DisplayName("Verify Passwords Negative Test")
     @Order(8)
-    @DisplayName("Create with No Name")
-    public void createGameBadRequest() {
-        // Assert that games with no name are caught
-        Assertions.assertThrows(BadRequestException.class, () -> CREATE_TESTING.createGame(new CreateGameRequest(null), gameList));
-    }
-
-    @Test
-    @Order(9)
-    @DisplayName("Join Normal Game")
-    public void joinGameSucceeds() {
-        gameList.createGame(TEST_GAME);
-        userList.createUser(TEST_USER);
-        authList.createAuth(TEST_AUTH);
-        GameData expectedGame = new GameData(1, null, "TestUser", "Game1", new ChessGame());
-        try {
-            JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 1), "example-auth", gameList, authList);
-
-            // Assert user joined as black
-            Assertions.assertEquals(expectedGame, gameList.getGame(1));
-        }catch(AlreadyTakenException | BadRequestException | ResponseException e){
-            // If error is thrown, fail test
-            Assertions.fail();
+    public void verifyPasswordsNeg() {
+        // Test that incorrect password does not verify
+        try{
+            userList.createUser(TEST_USER);
+            Assertions.assertFalse(userList.verifyPasswords("TestUser", "WrongPassword"));
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
         }
     }
 
     @Test
+    @DisplayName("Create Game Positive Test")
+    @Order(9)
+    public void createGamePos() {
+        // Test that Game was created
+        int initialRowCount = getDatabaseRows();
+        try {
+            gameList.createGame(TEST_GAME);
+            Assertions.assertTrue(initialRowCount < getDatabaseRows(), "No new data added to database");
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Create Game Negative Test")
     @Order(10)
-    @DisplayName("Join Negative Test")
-    public void joinGameBadID() {
-        gameList.createGame(TEST_GAME);
-        authList.createAuth(TEST_AUTH);
-        // Try to join Game that doesn't exist. Should throw Bad Request Exception
-        Assertions.assertThrows(BadRequestException.class, () ->
-                JOIN_TESTING.joinGame(new JoinGameRequest(ChessGame.TeamColor.BLACK, 2), "example-auth", gameList, authList));
+    public void createGameNeg() {
+        // Test that Game with Missing Info not Created
+        Assertions.assertThrows(ResponseException.class, () -> gameList.createGame(BAD_GAME));
     }
 
     @Test
+    @DisplayName("ListGames Positive Test")
     @Order(11)
-    @DisplayName("List All Games")
-    public void listAllGames() {
-        GameData secondGame = new GameData(2, "White", "Black", "Game2", new ChessGame());
-        GameData thirdGame = new GameData(3, "White", "Black", "Game3", new ChessGame());
-        GameData fourthGame = new GameData(4, "White", "Black", "Game4", new ChessGame());
-
-        Collection<GameData> expectedList = new ArrayList<>();
-        expectedList.add(TEST_GAME);
-        expectedList.add(secondGame);
-        expectedList.add(thirdGame);
-        expectedList.add(fourthGame);
-
-        gameList.createGame(TEST_GAME);
-        gameList.createGame(secondGame);
-        gameList.createGame(thirdGame);
-        gameList.createGame(fourthGame);
-
-        // Assert that the game list was updated properly
-        Assertions.assertEquals(expectedList, gameList.listGames());
+    public void listGamesPos() {
+        // Test that GameList can be retrieved
+        try {
+            gameList.createGame(TEST_GAME);
+            Assertions.assertNotNull(gameList.listGames());
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
     }
 
     @Test
+    @DisplayName("ListGames No Games Test")
     @Order(12)
-    @DisplayName("List Updated Games")
-    public void listUpdatedGames() {
-        GameData firstGame = new GameData(1, "White", "Black", "Game1", new ChessGame());
-        GameData secondGame = new GameData(2, "White", "Black", "Game2", new ChessGame());
-        GameData preUpdate = new GameData(3, "White", "Black", "PreUpdate", new ChessGame());
-        GameData postUpdate = new GameData(3, "White", "Black", "PostUpdate", new ChessGame());
-        expectedGameList.createGame(firstGame);
-        expectedGameList.createGame(secondGame);
-        expectedGameList.createGame(postUpdate);
-
-        gameList.createGame(firstGame);
-        gameList.createGame(secondGame);
-        gameList.createGame(preUpdate);
-        gameList.updateGame(postUpdate);
-        // Assert that the game was updated properly
-        Assertions.assertEquals(expectedGameList.listGames(), gameList.listGames());
+    public void listGamesEmpty() {
+        // Test that listGames returns nothing if no games
+        try{
+            Collection<GameData> checkingList = new ArrayList<>();
+            Assertions.assertEquals(checkingList, gameList.listGames());
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
     }
 
     @Test
+    @DisplayName("Get Game Positive Test")
     @Order(13)
-    @DisplayName("Clear Test")
-    public void clearData() throws ResponseException {
-        // Add data into database to test clearing against
-        GameData clearGameData = new GameData(1, "White", "Black", "ClearGame", new ChessGame());
-        UserData clearUserData = new UserData("Goose", "Goose123", "Goose@gmail.com");
-        AuthData clearAuthData = new AuthData("Goose", "example-auth");
-        userList.createUser(clearUserData);
-        authList.createAuth(clearAuthData);
-        gameList.createGame(clearGameData);
-        CLEAR_TESTING.clearGames(gameList);
-        CLEAR_TESTING.clearUsers(userList);
-        CLEAR_TESTING.clearAuths(authList);
-        // Assert that all lists are empty
-        Assertions.assertEquals(expectedGameList.listGames(), gameList.listGames());
-        Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
-        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
+    public void getGamePos() {
+        // Test that Game can be retrieved
+        try {
+            gameList.createGame(TEST_GAME);
+            GameData retrievedGame = gameList.getGame(1);
+            Assertions.assertNotNull(retrievedGame);
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
     }
 
     @Test
+    @DisplayName("Get Game Negative Test")
     @Order(14)
-    @DisplayName("Empty Before Clear")
-    public void clearEmptyLists() throws ResponseException {
-        // Clear empty lists
-        CLEAR_TESTING.clearGames(gameList);
-        CLEAR_TESTING.clearUsers(userList);
-        CLEAR_TESTING.clearAuths(authList);
-        // Assert that original lists are still empty and didn't throw errors
-        Assertions.assertEquals(expectedGameList.listGames(), gameList.listGames());
-        Assertions.assertEquals(expectedUserList.getUserList(), userList.getUserList());
-        Assertions.assertEquals(expectedAuthList.getAuthtokenList(), authList.getAuthtokenList());
+    public void getGameNeg() {
+        // Test that Game Not Created returns null
+        try{
+            GameData retrievedGame = gameList.getGame(10000);
+            Assertions.assertNull(retrievedGame);
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Update Game Positive Test")
+    @Order(15)
+    public void updateGamePos() {
+        // Test that UpdateGame properly updates by checking name of player
+        try {
+            gameList.createGame(TEST_GAME);
+            gameList.updateGame(UPDATED_GAME);
+            GameData retrievedGame = gameList.getGame(1);
+            Assertions.assertEquals(UPDATED_GAME.blackUsername(), retrievedGame.blackUsername());
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Update Game Negative Test")
+    @Order(16)
+    public void updateGameNeg() {
+        // Test that UpdateGame with bad info does nothing
+        try{
+            gameList.createGame(TEST_GAME);
+            gameList.updateGame(BAD_GAME);
+            Assertions.assertEquals(1, getDatabaseRows());
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Create Auth Positive Test")
+    @Order(17)
+    public void createAuthPos() {
+        // Test that Create Auth adds auth to database
+        try {
+            authList.createAuth(TEST_AUTH);
+            Assertions.assertEquals(1, getDatabaseRows());
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Create Auth Negative Test")
+    @Order(18)
+    public void createAuthNeg() {
+        // Test that createAuth with bad info throws error
+        Assertions.assertThrows(ResponseException.class, () -> authList.createAuth(BAD_AUTH));
 
     }
-*/
+
+    @Test
+    @DisplayName("Get Auth Positive Test")
+    @Order(19)
+    public void getAuthPos() {
+        // Test that Auth can be retrieved
+        try {
+            authList.createAuth(TEST_AUTH);
+            AuthData retrievedAuth = authList.getAuth("example-auth");
+            Assertions.assertNotNull(retrievedAuth);
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Get Auth Negative Test")
+    @Order(20)
+    public void getAuthNeg() {
+        // Test that Auth not created returns null
+        try{
+            AuthData retrievedAuth = authList.getAuth("Fake-token");
+            Assertions.assertNull(retrievedAuth);
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Delete Auth Positive Test")
+    @Order(21)
+    public void deleteAuthPos() {
+        // Test that Auth is properly Deleted
+        try {
+            authList.createAuth(TEST_AUTH);
+            authList.deleteAuth(TEST_AUTH);
+            Assertions.assertEquals(0, getDatabaseRows());
+        }catch(Exception e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Get Auth Negative Test")
+    @Order(20)
+    public void deleteAuthNeg() {
+        // Test that Delete doesn't change database on wrong Auth
+        try{
+            authList.createAuth(TEST_AUTH);
+            authList.deleteAuth(BAD_AUTH);
+            Assertions.assertEquals(1, getDatabaseRows());
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    @Test
+    @DisplayName("Clear All Databases")
+    @Order(23)
+    public void clearDataBases() {
+        // Test that all Databases are Cleared
+        try{
+            userList.createUser(TEST_USER);
+            authList.createAuth(TEST_AUTH);
+            gameList.createGame(TEST_GAME);
+            userList.clear();
+            authList.clearAuth();
+            gameList.deleteGames();
+            Assertions.assertEquals(0, getDatabaseRows());
+        }catch(ResponseException e){
+            System.out.println("Failed Test");
+        }
+    }
+
+    private int getDatabaseRows() {
+        AtomicInteger rows = new AtomicInteger();
+        executeForAllTables((tableName, connection) -> {
+            try (var statement = connection.createStatement()) {
+                var sql = "SELECT count(*) FROM " + tableName;
+                try (var resultSet = statement.executeQuery(sql)) {
+                    if (resultSet.next()) {
+                        rows.addAndGet(resultSet.getInt(1));
+                    }
+                }
+            }
+        });
+
+        return rows.get();
+    }
+
+    private void executeForAllTables(SQLDatabaseTests.TableActionTests tableAction) {
+        String sql = """
+                    SELECT table_name
+                    FROM information_schema.tables
+                    WHERE table_schema = DATABASE();
+                """;
+
+        try (Connection conn = getConnection(); PreparedStatement preparedStatement = conn.prepareStatement(sql)) {
+            try (var resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tableAction.execute(resultSet.getString(1), conn);
+                }
+            }
+        } catch (ReflectiveOperationException | SQLException e) {
+            Assertions.fail(e.getMessage(), e);
+        }
+    }
+
+    private Connection getConnection() throws ReflectiveOperationException {
+        Class<?> clazz = findDatabaseManager();
+        Method getConnectionMethod = clazz.getDeclaredMethod("getConnection");
+        getConnectionMethod.setAccessible(true);
+
+        Object obj = clazz.getDeclaredConstructor().newInstance();
+        return (Connection) getConnectionMethod.invoke(obj);
+    }
+
+    private Class<?> findDatabaseManager() throws ClassNotFoundException {
+        if(databaseManagerClass != null) {
+            return databaseManagerClass;
+        }
+
+        for (Package p : getClass().getClassLoader().getDefinedPackages()) {
+            try {
+                Class<?> clazz = Class.forName(p.getName() + ".DatabaseManager");
+                clazz.getDeclaredMethod("getConnection");
+                databaseManagerClass = clazz;
+                return clazz;
+            } catch (ReflectiveOperationException ignored) {}
+        }
+        throw new ClassNotFoundException("Unable to load database in order to verify persistence. " +
+                "Are you using DatabaseManager to set your credentials? " +
+                "Did you edit the signature of the getConnection method?");
+    }
+
+    private interface TableActionTests {
+        void execute(String tableName, Connection connection) throws SQLException;
+    }
 }
