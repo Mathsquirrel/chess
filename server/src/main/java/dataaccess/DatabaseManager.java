@@ -40,7 +40,7 @@ public class DatabaseManager {
             conn.setCatalog(databaseName);
             return conn;
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, "Error: {Could not create connection to database server.}");
+            throw new ResponseException("Error: {Could not create connection to database server.}");
         }
     }
 
@@ -110,7 +110,7 @@ public class DatabaseManager {
              var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.executeUpdate();
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError, "Error: {Could not create connection to database server.}");
+            throw new ResponseException("Error: {Could not create connection to database server.}");
         }
     }
 
@@ -123,8 +123,7 @@ public class DatabaseManager {
                 }
             }
         } catch (SQLException ex) {
-            throw new ResponseException(ResponseException.Code.ServerError,
-                    String.format("Error: {Unable to configure database: %s}", ex.getMessage()));
+            throw new ResponseException(String.format("Error: {Unable to configure database: %s}", ex.getMessage()));
         }
     }
 }
