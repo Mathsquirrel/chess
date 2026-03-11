@@ -80,9 +80,15 @@ public class SQLGameAccess implements GameAccess{
             try (PreparedStatement ps = conn.prepareStatement(statement, RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
-                    if (param instanceof Integer p) ps.setInt(i + 1, p);
-                    else if (param instanceof String p) ps.setString(i + 1, p);
-                    else if (param == null) ps.setNull(i + 1, NULL);
+                    if (param instanceof Integer p){
+                        ps.setInt(i + 1, p);
+                    }
+                    else if (param instanceof String p) {
+                        ps.setString(i + 1, p);
+                    }
+                    else if (param == null) {
+                        ps.setNull(i + 1, NULL);
+                    }
                 }
                 ps.executeUpdate();
 
@@ -93,7 +99,8 @@ public class SQLGameAccess implements GameAccess{
 
             }
         } catch (SQLException e) {
-            throw new ResponseException(ResponseException.Code.ServerError, String.format("Error: {unable to update database: %s, %s}", statement, e.getMessage()));
+            throw new ResponseException(ResponseException.Code.ServerError,
+                    String.format("Error: {unable to update database: %s, %s}", statement, e.getMessage()));
         }
     }
 }
