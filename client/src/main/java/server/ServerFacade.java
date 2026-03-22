@@ -17,7 +17,7 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public LoginRegisterResult register(UserData registerAttempt) throws ResponseException {
+    public LoginRegisterResult register(RegisterRequest registerAttempt) throws ResponseException {
         var request = buildRequest("POST", "/user", registerAttempt);
         var response = sendRequest(request);
         return handleResponse(response, LoginRegisterResult.class);
