@@ -43,7 +43,7 @@ public class ChessClient {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + ">>> ");
+        System.out.print("\n[" + state.toString() + "]>>> ");
     }
 
 
@@ -59,7 +59,6 @@ public class ChessClient {
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
                 case "create" -> createGame();
-                case "clear" -> clear();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -77,7 +76,7 @@ public class ChessClient {
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
                 visitorName = params[0];
-                return String.format("You registered as %s.", visitorName);
+                return String.format("Logged in as %s", visitorName);
             }else{
                 return "Error: Username Already Taken";
             }
@@ -94,7 +93,7 @@ public class ChessClient {
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
                 visitorName = params[0];
-                return String.format("You signed in as %s.", visitorName);
+                return String.format("Logged in as %s", visitorName);
             }else{
                 return "Invalid Credentials: Username or Password is incorrect";
             }
@@ -149,7 +148,7 @@ public class ChessClient {
                 throw new ResponseException("Error: First parameter should be a number");
             }
         }
-        throw new ResponseException("Expected: <game id> 'White' OR 'Black'");
+        throw new ResponseException("Expected: <game id> 'WHITE' OR 'BLACK'");
     }
 
     public String createGame(String... params) throws ResponseException {
@@ -162,6 +161,7 @@ public class ChessClient {
         throw new ResponseException("Expected: <game id> 'White' OR 'Black'");
     }
 
+    // Solely for Testing Purposes
     public String clear() throws ResponseException {
         assertSignedIn();
         server.clear();
@@ -180,17 +180,20 @@ public class ChessClient {
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
-                    - signIn <yourname>
-                    - quit
+                    - register <USERNAME> <PASSWORD> <EMAIL> - creates an account
+                    - signIn <USERNAME> <PASSWORD> - signs into an account
+                    - quit - quit playing chess
+                    - help - shows all possible commands
                     """;
         }
         return """
-                - list
-                - adopt <pet id>
-                - rescue <name> <CAT|DOG|FROG|FISH>
-                - adoptAll
-                - signOut
-                - quit
+                - list - lists all games
+                - join - <ID> [WHITE | BLACK] - joins a game
+                - create - <NAME> - creates a game
+                - observe - <ID> - observe a game
+                - signOut - logs out of account
+                - quit - quit playing chess
+                - help - shows all possible commands
                 """;
     }
 
