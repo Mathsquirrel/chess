@@ -29,21 +29,22 @@ public class ServerFacade {
         return handleResponse(response, LoginRegisterResult.class);
     }
 
-    public LogoutResponse logout(String logoutAttempt) throws ResponseException{
+    public void logout(String logoutAttempt) throws ResponseException{
         var request = buildRequest("DELETE", "/session", logoutAttempt);
         var response = sendRequest(request);
-        return handleResponse(response, LogoutResponse.class);
+        handleResponse(response, LogoutResponse.class);
     }
 
     public void joinGame(JoinGameRequest joinAttempt) throws ResponseException{
         var request = buildRequest("PUT", "/game", joinAttempt);
         var response = sendRequest(request);
+        handleResponse(response, JoinGameRequest.class);
     }
 
-    public CreateGameResponse createGame(CreateGameRequest createAttempt) throws ResponseException{
+    public void createGame(CreateGameRequest createAttempt) throws ResponseException{
         var request = buildRequest("DELETE", "/session", createAttempt);
         var response = sendRequest(request);
-        return handleResponse(response, CreateGameResponse.class);
+        handleResponse(response, CreateGameResponse.class);
     }
 
     public ListGamesResponse listGames() throws ResponseException {
