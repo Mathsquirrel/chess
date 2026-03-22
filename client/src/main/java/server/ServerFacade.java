@@ -89,7 +89,7 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
-                throw new ResponseException("TESTING");
+                throw ResponseException.fromJson(body);
             }
 
             throw new ResponseException("other failure: " + status);

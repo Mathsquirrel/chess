@@ -58,7 +58,7 @@ public class ChessClient {
                 case "logout" -> logout();
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
-                case "create" -> createGame();
+                case "create" -> createGame(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -154,11 +154,12 @@ public class ChessClient {
     public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
+            System.out.println(params[0]);
             CreateGameRequest createAttempt = new CreateGameRequest(params[0]);
             server.createGame(createAttempt);
             return "You have successfully created a game";
         }
-        throw new ResponseException("Expected: <game id> 'White' OR 'Black'");
+        throw new ResponseException("Expected: <NAME>");
     }
 
     // Solely for Testing Purposes
@@ -181,7 +182,7 @@ public class ChessClient {
         if (state == State.SIGNEDOUT) {
             return """
                     - register <USERNAME> <PASSWORD> <EMAIL> - creates an account
-                    - signIn <USERNAME> <PASSWORD> - signs into an account
+                    - login <USERNAME> <PASSWORD> - signs into an account
                     - quit - quit playing chess
                     - help - shows all possible commands
                     """;
@@ -191,7 +192,7 @@ public class ChessClient {
                 - join - <ID> [WHITE | BLACK] - joins a game
                 - create - <NAME> - creates a game
                 - observe - <ID> - observe a game
-                - signOut - logs out of account
+                - logout - logs out of account
                 - quit - quit playing chess
                 - help - shows all possible commands
                 """;
