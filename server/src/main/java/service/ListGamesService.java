@@ -12,7 +12,7 @@ public class ListGamesService {
         Collection<ListGamesData> responseList = new ArrayList<>();
         for(GameData games : gameList.listGames()){
             // For each game in the list
-            responseList.add(new ListGamesData(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName()));
+            responseList.add(new ListGamesData(games.gameID(), games.whiteUsername(), games.blackUsername(), games.gameName(), games));
         }
         return new ListGamesResponse(responseList);
     }

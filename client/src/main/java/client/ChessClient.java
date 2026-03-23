@@ -1,10 +1,13 @@
 package client;
 
+import chess.*;
 import chess.ChessGame.TeamColor;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
+import ui.PrintBoard;
 
 import java.util.Arrays;
 import java.util.Scanner;
@@ -14,6 +17,7 @@ import static chess.ChessGame.TeamColor.*;
 public class ChessClient {
     private String visitorName = null;
     private String visitorAuth = null;
+    ChessGame currentGame = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
 
@@ -60,11 +64,18 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "create" -> createGame(params);
                 case "quit" -> "quit";
+                case "print" -> printBoard();
+                case "clear" -> clear();
                 default -> help();
             };
         } catch (ResponseException ex) {
             return ex.getMessage();
         }
+    }
+
+    public String printBoard() throws ResponseException {
+        PrintBoard.print();
+        return "Done";
     }
 
     public String register(String... params) throws ResponseException {
@@ -164,7 +175,6 @@ public class ChessClient {
 
     // Solely for Testing Purposes
     public String clear() throws ResponseException {
-        assertSignedIn();
         server.clear();
         return "You have cleared all data from the server";
     }
