@@ -2,21 +2,20 @@ package client;
 
 import chess.*;
 import chess.ChessGame.TeamColor;
-import chess.ChessPosition;
-import com.google.gson.Gson;
 import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static chess.ChessGame.TeamColor.*;
 
 public class ChessClient {
     private String visitorName = null;
-    private String visitorAuth = null;
+    private String visitorAuth = "";
     ChessGame currentGame = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
@@ -79,10 +78,11 @@ public class ChessClient {
     }
 
     public String register(String... params) throws ResponseException {
+        assertSignedOut();
         if (params.length == 3) {
             // Correct number of parameters
             RegisterRequest registerAttempt = new RegisterRequest(params[0], params[1], params[2]);
-            LoginRegisterResult result = server.register(registerAttempt);
+            LoginRegisterResult result = server.register(registerAttempt, visitorAuth);
             if(result != null){
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
@@ -96,10 +96,11 @@ public class ChessClient {
     }
 
     public String login(String... params) throws ResponseException {
+        assertSignedOut();
         if (params.length == 2) {
             // Correct number of parameters
             LoginRequest attempt = new LoginRequest(params[0], params[1]);
-            LoginRegisterResult result = server.login(attempt);
+            LoginRegisterResult result = server.login(attempt, visitorAuth);
             if(result != null){
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
@@ -126,11 +127,13 @@ public class ChessClient {
 
     public String listGames() throws ResponseException {
         assertSignedIn();
-        ListGamesResponse games = server.listGames();
+        ListGamesResponse games = server.listGames(visitorAuth);
         var result = new StringBuilder();
-        var gson = new Gson();
+        int numGames = 1;
         for (ListGamesData game : games.games()) {
-            result.append(gson.toJson(game)).append('\n');
+            String oneData = numGames + "   GameID: " + game.gameID() + " " + game.gameName() + " White: " + game.whiteUsername() + " Black: "+ game.blackUsername();
+            result.append(oneData).append('\n');
+            numGames ++;
         }
         return result.toString();
     }
@@ -151,8 +154,11 @@ public class ChessClient {
                     throw new ResponseException("Error: Player color was not 'White' OR 'Black'");
                 }
                 if (game != null) {
+                    if(Objects.equals(game.blackUsername(), visitorName) || Objects.equals(game.whiteUsername(), visitorName)){
+                        throw new ResponseException("Error: You have already joined this game");
+                    }
                     JoinGameRequest joinAttempt = new JoinGameRequest(color, id);
-                    server.joinGame(joinAttempt);
+                    server.joinGame(joinAttempt, visitorAuth);
                     return String.format("You has joined Game %d as %s", id, playerColor);
                 }
             } catch (NumberFormatException ignored) {
@@ -165,9 +171,8 @@ public class ChessClient {
     public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length == 1) {
-            System.out.println(params[0]);
             CreateGameRequest createAttempt = new CreateGameRequest(params[0]);
-            server.createGame(createAttempt);
+            server.createGame(createAttempt, visitorAuth);
             return "You have successfully created a game";
         }
         throw new ResponseException("Expected: <NAME>");
@@ -175,12 +180,13 @@ public class ChessClient {
 
     // Solely for Testing Purposes
     public String clear() throws ResponseException {
-        server.clear();
+        server.clear(visitorAuth);
+        state = State.SIGNEDOUT;
         return "You have cleared all data from the server";
     }
 
     private ListGamesData getGame(int id) throws ResponseException {
-        for (ListGamesData game : server.listGames().games()) {
+        for (ListGamesData game : server.listGames(visitorAuth).games()) {
             if (game.gameID() == id) {
                 return game;
             }
@@ -211,6 +217,12 @@ public class ChessClient {
     private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
             throw new ResponseException("You must sign in");
+        }
+    }
+
+    private void assertSignedOut() throws ResponseException {
+        if (state == State.SIGNEDIN) {
+            throw new ResponseException("You must be signed out");
         }
     }
 }
