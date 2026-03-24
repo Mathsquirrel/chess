@@ -7,9 +7,7 @@ import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
 
@@ -18,6 +16,7 @@ public class ChessClient {
     private String visitorAuth = "";
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private static int[] gameNums = new int[100];
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -126,11 +125,13 @@ public class ChessClient {
         assertSignedIn();
         ListGamesResponse games = server.listGames(visitorAuth);
         var result = new StringBuilder();
+        gameNums = new int[100];
         int numGames = 1;
         for (ListGamesData game : games.games()) {
-            String oneData = numGames + "   GameID: " + game.gameID() + " " + game.gameName()
+            String oneData = numGames + " " + game.gameName()
                     + " White: " + game.whiteUsername() + " Black: "+ game.blackUsername();
             result.append(oneData).append('\n');
+            gameNums[numGames] = numGames;
             numGames ++;
         }
         return result.toString();
@@ -140,7 +141,9 @@ public class ChessClient {
         assertSignedIn();
         if (params.length == 2) {
             try {
+                // Convert provided ID to gameID
                 int id = Integer.parseInt(params[0]);
+                id = gameNums[id];
                 ListGamesData game = getGame(id);
                 String playerColor = params[1].toLowerCase();
                 TeamColor color;
@@ -179,7 +182,7 @@ public class ChessClient {
 
     // Solely for Testing Purposes
     public String clear() throws ResponseException {
-        server.clear(visitorAuth);
+        server.clear();
         state = State.SIGNEDOUT;
         return "You have cleared all data from the server";
     }

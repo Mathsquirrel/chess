@@ -53,8 +53,8 @@ public class ServerFacade {
         return handleResponse(response, ListGamesResponse.class);
     }
 
-    public void clear(String authToken) throws ResponseException {
-        var request = buildRequest("DELETE", "/db", null, authToken);
+    public void clear() throws ResponseException {
+        var request = buildRequest("DELETE", "/db", null, null);
         sendRequest(request);
     }
 
