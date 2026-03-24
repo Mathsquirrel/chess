@@ -129,7 +129,8 @@ public class ChessClient {
         var result = new StringBuilder();
         int numGames = 1;
         for (ListGamesData game : games.games()) {
-            String oneData = numGames + "   GameID: " + game.gameID() + " " + game.gameName() + " White: " + game.whiteUsername() + " Black: "+ game.blackUsername();
+            String oneData = numGames + "   GameID: " + game.gameID() + " " + game.gameName()
+                    + " White: " + game.whiteUsername() + " Black: "+ game.blackUsername();
             result.append(oneData).append('\n');
             numGames ++;
         }

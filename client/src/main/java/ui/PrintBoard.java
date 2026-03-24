@@ -17,15 +17,15 @@ public class PrintBoard {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 0;
-    private static int COLOR_CORRECTOR;
+    private static int colorCorrector;
     private static final String[] SMALL_HEADERS = { " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
 
     public static void print(ChessGame game, TeamColor printPerspective) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         if(printPerspective == BLACK){
-            COLOR_CORRECTOR = 7;
+            colorCorrector = 7;
         }else{
-            COLOR_CORRECTOR = 0;
+            colorCorrector = 0;
         }
         out.print(ERASE_SCREEN);
 
@@ -47,7 +47,7 @@ public class PrintBoard {
         String[] headers = { "\u2003a ", "\u2003b ", "\u2003c ", "\u2003d ", "\u2003e ", "\u2003f ", "\u2003g ", "\u2003h " };
         out.print(EMPTY_SMALL);
         for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-            drawHeader(out, headers[Math.abs(boardCol-COLOR_CORRECTOR)]);
+            drawHeader(out, headers[Math.abs(boardCol- colorCorrector)]);
 
             if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
                 out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
@@ -105,7 +105,7 @@ public class PrintBoard {
                     out.print(SET_BG_COLOR_DARK_GREY);
                     if(squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2){
                         out.print(SET_TEXT_COLOR_WHITE);
-                        out.print(SMALL_HEADERS[Math.abs(COLOR_CORRECTOR-rowNum)]);
+                        out.print(SMALL_HEADERS[Math.abs(colorCorrector -rowNum)]);
                     }else{
                         out.print(EMPTY_SMALL);
                     }
@@ -122,10 +122,10 @@ public class PrintBoard {
 
                     out.print(EMPTY.repeat(prefixLength));
                     int tempCorrector = 0;
-                    if(COLOR_CORRECTOR == 0){
+                    if(colorCorrector == 0){
                         tempCorrector = 7;
                     }
-                    ChessPiece currentPiece = game.getBoard().getBoardState()[Math.abs(tempCorrector-rowNum)][Math.abs(COLOR_CORRECTOR-boardCol)];
+                    ChessPiece currentPiece = game.getBoard().getBoardState()[Math.abs(tempCorrector-rowNum)][Math.abs(colorCorrector -boardCol)];
 
                     // ALL I'm DOING IS MIRRORING THE BOARD. KING AND QUEEN ARE NOT ROTATING LIKE THEY SHOULD, THEY'RE MIRRORING
                     if(currentPiece == null) {
@@ -151,7 +151,7 @@ public class PrintBoard {
                     out.print(SET_BG_COLOR_DARK_GREY);
                     out.print(SET_TEXT_COLOR_WHITE);
                     if(squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2){
-                        out.print(SMALL_HEADERS[Math.abs(COLOR_CORRECTOR - rowNum)]);
+                        out.print(SMALL_HEADERS[Math.abs(colorCorrector - rowNum)]);
                     }else{
                         out.print(EMPTY_SMALL);
                     }
