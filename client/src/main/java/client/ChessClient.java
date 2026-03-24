@@ -157,10 +157,11 @@ public class ChessClient {
                     }
                     JoinGameRequest joinAttempt = new JoinGameRequest(color, id);
                     server.joinGame(joinAttempt, visitorAuth);
+                    PrintBoard.print(game.chessGame().game(), color);
                     return String.format("You has joined Game %d as %s", id, playerColor);
                 }
             } catch (NumberFormatException ignored) {
-                throw new ResponseException("Error: First parameter should be a number");
+                throw new ResponseException("Error: First parameter should be the Game's ID");
             }
         }
         throw new ResponseException("Expected: <game id> 'WHITE' OR 'BLACK'");
