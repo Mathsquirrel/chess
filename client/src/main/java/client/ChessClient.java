@@ -16,7 +16,6 @@ import static chess.ChessGame.TeamColor.*;
 public class ChessClient {
     private String visitorName = null;
     private String visitorAuth = "";
-    ChessGame currentGame = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
 
