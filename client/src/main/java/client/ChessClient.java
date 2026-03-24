@@ -25,9 +25,7 @@ public class ChessClient {
     }
 
     public void run() {
-        System.out.println(" Welcome to the Chess Server. Sign in to start.");
-        System.out.print(help());
-
+        System.out.println(" Welcome to the Chess Server. Type 'help' for options.");
         Scanner scanner = new Scanner(System.in);
         var result = "";
         while (!result.equals("quit")) {
@@ -73,7 +71,7 @@ public class ChessClient {
     }
 
     public String printBoard() throws ResponseException {
-        PrintBoard.print();
+        PrintBoard.print(new ChessGame(), BLACK);
         return "Done";
     }
 
