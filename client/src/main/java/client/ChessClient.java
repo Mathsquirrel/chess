@@ -56,11 +56,10 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "logout" -> logout();
                 case "list" -> listGames();
-                case "join" -> joinGame(params); // REMOVE COMMENTED CODE IF NEEDED
+                case "join" -> joinGame(params);
                 case "create" -> createGame(params);
                 case "observe" -> observeGame(params);
                 case "quit" -> "quit";
-                case "clear" -> clear(); // REMOVE AFTER PASSOFF
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -176,13 +175,6 @@ public class ChessClient {
             return "You have successfully created a game";
         }
         throw new ResponseException("Expected: <NAME>");
-    }
-
-    // Solely for Testing Purposes
-    public String clear() throws ResponseException {
-        server.clear();
-        state = State.SIGNEDOUT;
-        return "You have cleared all data from the server";
     }
 
     private ListGamesData getGame(int id) throws ResponseException {
