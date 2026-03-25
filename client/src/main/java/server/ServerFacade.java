@@ -90,7 +90,7 @@ public class ServerFacade {
         if (!isSuccessful(status)) {
             var body = response.body();
             if (body != null) {
-                throw ResponseException.fromJson(body);
+                throw new ResponseException("Error: Username or Password was incorrect");
             }
 
             throw new ResponseException("other failure: " + status);

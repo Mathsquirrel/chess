@@ -56,12 +56,11 @@ public class ChessClient {
                 case "login" -> login(params);
                 case "logout" -> logout();
                 case "list" -> listGames();
-                case "join" -> joinGame(params);
+                case "join" -> joinGame(params); // REMOVE COMMENTED CODE IF NEEDED
                 case "create" -> createGame(params);
                 case "observe" -> observeGame(params);
                 case "quit" -> "quit";
-                case "print" -> printBoard();
-                case "clear" -> clear();
+                case "clear" -> clear(); // REMOVE AFTER PASSOFF
                 default -> help();
             };
         } catch (ResponseException ex) {
@@ -69,24 +68,22 @@ public class ChessClient {
         }
     }
 
-    public String printBoard() throws ResponseException {
-        PrintBoard.print(new ChessGame(), BLACK);
-        return "Done";
-    }
-
     public String register(String... params) throws ResponseException {
         assertSignedOut();
         if (params.length == 3) {
             // Correct number of parameters
             RegisterRequest registerAttempt = new RegisterRequest(params[0], params[1], params[2]);
-            LoginRegisterResult result = server.register(registerAttempt);
+            LoginRegisterResult result;
+            try {
+                result = server.register(registerAttempt);
+            }catch(Exception e){
+                return "Error: Username Already Taken";
+            }
             if(result != null){
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
                 visitorName = params[0];
                 return String.format("Logged in as %s", visitorName);
-            }else{
-                return "Error: Username Already Taken";
             }
         }
         throw new ResponseException("Expected Format: 'username' 'password' 'email'");
@@ -144,6 +141,9 @@ public class ChessClient {
             try {
                 // Convert provided ID to gameID
                 int id = Integer.parseInt(params[0]);
+                if(!Collections.singletonList(gameNums).contains(id)){
+                    throw new ResponseException("Error: Game ID does not exist");
+                }
                 id = gameNums[id];
                 ListGamesData game = getGame(id);
                 String playerColor = params[1].toLowerCase();
@@ -156,9 +156,6 @@ public class ChessClient {
                     throw new ResponseException("Error: Player color was not 'White' OR 'Black'");
                 }
                 if (game != null) {
-                    if(Objects.equals(game.blackUsername(), visitorName) || Objects.equals(game.whiteUsername(), visitorName)){
-                        throw new ResponseException("Error: You have already joined this game");
-                    }
                     JoinGameRequest joinAttempt = new JoinGameRequest(color, id);
                     server.joinGame(joinAttempt, visitorAuth);
                     PrintBoard.print(game.chessGame().game(), color);
