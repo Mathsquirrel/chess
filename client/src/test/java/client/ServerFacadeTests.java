@@ -74,7 +74,7 @@ public class ServerFacadeTests {
     @Test
     void logoutNeg() throws Exception {
         facade.register(registerAttempt);
-        Assertions.assertThrows(ResponseException.class, () -> facade.logout("badAuth"));
+        Assertions.assertThrows(ResponseException.class, () -> facade.logout(""));
     }
 
 
@@ -86,11 +86,10 @@ public class ServerFacadeTests {
     }
 
     @Test
-    void createGameNeg() throws Exception {
-        var authData = facade.register(registerAttempt);
+    void createGameNeg() {
         CreateGameRequest createGameAttemptFail = new CreateGameRequest(null);
 
-        Assertions.assertThrows(ResponseException.class, () -> facade.createGame(createGameAttemptFail, authData.authToken()));
+        Assertions.assertThrows(ResponseException.class, () -> facade.createGame(createGameAttemptFail, ""));
     }
 
     @Test
@@ -135,10 +134,9 @@ public class ServerFacadeTests {
         facade.createGame(createGameAttempt, authData.authToken());
         facade.createGame(createGameAttempt2, authData.authToken());
         facade.createGame(createGameAttempt3, authData.authToken());
-        ListGamesResponse gameList = facade.listGames(authData.authToken());
         facade.clear();
         authData = facade.register(registerAttempt);
-        gameList = facade.listGames(authData.authToken());
+        ListGamesResponse gameList = facade.listGames(authData.authToken());
         assertEquals(0, gameList.games().size());
     }
 }
