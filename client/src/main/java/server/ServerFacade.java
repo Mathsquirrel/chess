@@ -17,14 +17,14 @@ public class ServerFacade {
         serverUrl = url;
     }
 
-    public LoginRegisterResult register(RegisterRequest registerAttempt, String authToken) throws ResponseException {
-        var request = buildRequest("POST", "/user", registerAttempt, authToken);
+    public LoginRegisterResult register(RegisterRequest registerAttempt) throws ResponseException {
+        var request = buildRequest("POST", "/user", registerAttempt, "");
         var response = sendRequest(request);
         return handleResponse(response, LoginRegisterResult.class);
     }
 
-    public LoginRegisterResult login(LoginRequest loginAttempt, String authToken) throws ResponseException{
-        var request = buildRequest("POST", "/session", loginAttempt, authToken);
+    public LoginRegisterResult login(LoginRequest loginAttempt) throws ResponseException{
+        var request = buildRequest("POST", "/session", loginAttempt, "");
         var response = sendRequest(request);
         return handleResponse(response, LoginRegisterResult.class);
     }
@@ -54,7 +54,7 @@ public class ServerFacade {
     }
 
     public void clear() throws ResponseException {
-        var request = buildRequest("DELETE", "/db", null, null);
+        var request = buildRequest("DELETE", "/db", null, "");
         sendRequest(request);
     }
 

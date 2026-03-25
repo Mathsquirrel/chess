@@ -58,6 +58,7 @@ public class ChessClient {
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
                 case "create" -> createGame(params);
+                case "observe" -> observeGame(params);
                 case "quit" -> "quit";
                 case "print" -> printBoard();
                 case "clear" -> clear();
@@ -78,7 +79,7 @@ public class ChessClient {
         if (params.length == 3) {
             // Correct number of parameters
             RegisterRequest registerAttempt = new RegisterRequest(params[0], params[1], params[2]);
-            LoginRegisterResult result = server.register(registerAttempt, visitorAuth);
+            LoginRegisterResult result = server.register(registerAttempt);
             if(result != null){
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
@@ -96,7 +97,7 @@ public class ChessClient {
         if (params.length == 2) {
             // Correct number of parameters
             LoginRequest attempt = new LoginRequest(params[0], params[1]);
-            LoginRegisterResult result = server.login(attempt, visitorAuth);
+            LoginRegisterResult result = server.login(attempt);
             if(result != null){
                 visitorAuth = result.authToken();
                 state = State.SIGNEDIN;
@@ -194,6 +195,30 @@ public class ChessClient {
             }
         }
         return null;
+    }
+
+    private String observeGame(String... params) throws ResponseException {
+        if(params.length != 1){
+            throw new ResponseException("Error: Expected <ID>");
+        }
+        int id;
+        try {
+            id = Integer.parseInt(params[0]);
+        }catch(Exception e){
+            throw new ResponseException("Error: Did not provide a number");
+        }
+        boolean foundGame = false;
+        for (ListGamesData game : server.listGames(visitorAuth).games()) {
+            if (game.gameID() == id) {
+                PrintBoard.print(game.chessGame().game(), WHITE);
+                foundGame = true;
+            }
+        }
+        if(foundGame){
+            return "You have joined as an observer";
+        }else{
+            return "The ID you provided did not match any games";
+        }
     }
 
     public String help() {
