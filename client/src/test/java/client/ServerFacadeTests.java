@@ -119,4 +119,26 @@ public class ServerFacadeTests {
         ListGamesResponse gameList = facade.listGames(authData.authToken());
         assertEquals(3, gameList.games().size());
     }
+
+    @Test
+    void listGamesAlt() throws Exception {
+        var authData = facade.register(registerAttempt);
+        ListGamesResponse gameList = facade.listGames(authData.authToken());
+        assertEquals(0, gameList.games().size());
+    }
+
+    @Test
+    void testClear() throws Exception {
+        var authData = facade.register(registerAttempt);
+        CreateGameRequest createGameAttempt2 = new CreateGameRequest("Game2");
+        CreateGameRequest createGameAttempt3 = new CreateGameRequest("Game3");
+        facade.createGame(createGameAttempt, authData.authToken());
+        facade.createGame(createGameAttempt2, authData.authToken());
+        facade.createGame(createGameAttempt3, authData.authToken());
+        ListGamesResponse gameList = facade.listGames(authData.authToken());
+        facade.clear();
+        authData = facade.register(registerAttempt);
+        gameList = facade.listGames(authData.authToken());
+        assertEquals(0, gameList.games().size());
+    }
 }
