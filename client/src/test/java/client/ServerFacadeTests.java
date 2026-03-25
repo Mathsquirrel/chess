@@ -17,6 +17,8 @@ public class ServerFacadeTests {
     RegisterRequest registerAttempt = new RegisterRequest("player1", "password", "p1@email.com");
     CreateGameRequest createGameAttempt = new CreateGameRequest("GameName");
     JoinGameRequest joinGameAttempt = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1);
+    LoginRequest loginAttempt = new LoginRequest("player1", "password");
+
 
 
     @BeforeAll
@@ -48,12 +50,12 @@ public class ServerFacadeTests {
     @Test
     void registerNeg() {
         RegisterRequest badRegister = new RegisterRequest(null, null, null);
+
         assertThrows(ResponseException.class, () -> facade.register(badRegister));
     }
 
     @Test
     void loginPos() throws Exception {
-        LoginRequest loginAttempt = new LoginRequest("player1", "password");
         facade.register(registerAttempt);
         var authData = facade.login(loginAttempt);
         assertTrue(authData.authToken().length() > 10);
