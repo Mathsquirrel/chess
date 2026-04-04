@@ -33,10 +33,12 @@ public class ConnectionManager {
 
     public void broadcast(Session excludeSession, ServerMessage notification) throws IOException {
         String msg = notification.toString();
-        for (Session c : connections.values()) {
-            if (c.isOpen()) {
-                if (!c.equals(excludeSession)) {
-                    c.getRemote().sendString(msg);
+        for (List<Session> game : connections.values()) {
+            for (Session c : game) {
+                if (c.isOpen()) {
+                    if (!c.equals(excludeSession)) {
+                        c.getRemote().sendString(msg);
+                    }
                 }
             }
         }
