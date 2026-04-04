@@ -10,6 +10,7 @@ import ui.PrintBoard;
 import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
+import static client.State.INGAME;
 
 public class ChessClient {
     private String visitorName = null;
@@ -59,12 +60,37 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "create" -> createGame(params);
                 case "observe" -> observeGame(params);
+                case "leave" -> leaveGame();
+                case "redraw" -> redraw();
+                case "move" -> makeMove(params);
+                case "resign" -> resign();
+                case "highlight" -> highlight(params);
                 case "quit" -> "quit";
                 default -> help();
             };
         } catch (ResponseException ex) {
             return ex.getMessage();
         }
+    }
+
+    public String leaveGame(){
+        return null;
+    }
+
+    public String redraw(){
+        return null;
+    }
+
+    public String makeMove(String... params){
+        return null;
+    }
+
+    public String resign(){
+        return null;
+    }
+
+    public String highlight(String... params){
+        return null;
     }
 
     public String register(String... params) throws ResponseException {
@@ -204,6 +230,7 @@ public class ChessClient {
             }
         }
         if(foundGame){
+            state = INGAME;
             return "You have joined as an observer";
         }else{
             return "The ID you provided did not match any games";
@@ -218,16 +245,26 @@ public class ChessClient {
                     - quit - quit playing chess
                     - help - shows all possible commands
                     """;
+        }else if(state == State.SIGNEDIN) {
+            return """
+                    - list - lists all games
+                    - join - <ID> [WHITE | BLACK] - joins a game
+                    - create - <NAME> - creates a game
+                    - observe - <ID> - observe a game
+                    - logout - logs out of account
+                    - quit - quit playing chess
+                    - help - shows all possible commands
+                    """;
+        }else{
+            return """
+                    - redraw - redraws the chess board
+                    - leave - leaves the game
+                    - move <COL,ROW> <COL,ROW> - moves the piece at the first position to the second
+                    - resign - forfeit and end the game
+                    - highlight <COL,ROW> - highlight all legal moves for that piece
+                    - help - shows all possible commands
+                    """;
         }
-        return """
-                - list - lists all games
-                - join - <ID> [WHITE | BLACK] - joins a game
-                - create - <NAME> - creates a game
-                - observe - <ID> - observe a game
-                - logout - logs out of account
-                - quit - quit playing chess
-                - help - shows all possible commands
-                """;
     }
 
     private void assertSignedIn() throws ResponseException {
