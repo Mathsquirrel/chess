@@ -17,7 +17,7 @@ import java.io.IOException;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-
+    private final Gson Serializer = new Gson();
     @Override
     public void handleConnect(WsConnectContext ctx) {
         System.out.println("Websocket connected");
@@ -25,32 +25,45 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     @Override
-    public void handleMessage(WsMessageContext ctx) {
+    public void handleMessage(WsMessageContext wsMessageContext) throws Exception {
+        int gameId = -1;
+        Session session = wsMessageContext.session;
+
         try {
-            UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
+            UserGameCommand command = Serializer.fromJson(
+                    wsMessageContext.message(), UserGameCommand.class);
+            gameId = command.getGameID();
+            String username = getUsername(command.getAuthToken());
+            connections.add(gameId, session); // Save the session
+
             switch (command.getCommandType()) {
-                case CONNECT -> enter(command.getAuthToken(), ctx.session);
-                case MAKE_MOVE -> makeMove(command.getAuthToken(), command.getGameID());
-                case RESIGN -> resign(command.getAuthToken(), command.getGameID());
-                case LEAVE -> exit(command.getAuthToken(), ctx.session);
+                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
+                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
+                case RESIGN -> resign(session, username, (ResignCommand) command);
             }
-        } catch (IOException | ResponseException ex) {
+        } catch (UnauthorizedException ex) {
+            sendMessage(session, gameId, new ErrorMessage("Error: unauthorized"));
+        } catch (Exception ex) {
             ex.printStackTrace();
+            sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
         }
     }
+
+
 
     @Override
     public void handleClose(WsCloseContext ctx) {
         System.out.println("Websocket closed");
     }
 
-    private void enter(String authToken, Session session) throws IOException {
+    private void connect(String authToken, Session session) throws IOException {
         connections.add(session);
         var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         connections.broadcast(session, notification);
     }
 
-    private void exit(String authToken, Session session) throws IOException {
+    private void leaveGame(String authToken, Session session) throws IOException {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
         connections.broadcast(session, notification);
         connections.remove(session);
@@ -72,5 +85,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } catch (Exception ex) {
             throw new ResponseException("Test");
         }
+    }
+
+    private void getUsername(String authToken){
+
     }
 }
