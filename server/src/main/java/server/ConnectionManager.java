@@ -4,17 +4,31 @@ import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
-    public final ConcurrentHashMap<Session, Session> connections = new ConcurrentHashMap<>();
+    public Map<Integer, List<Session>> connections = new ConcurrentHashMap<>();
 
-    public void add(Session session) {
-        connections.put(session, session);
+    public void add(int gameID, Session session) {
+        if(!connections.containsKey(gameID)){
+            // If Game not in list create it with empty playerList
+            List<Session> players = new ArrayList<>();
+            connections.put(gameID, players);
+        }
+        // Add player to list of players involved in game
+        List<Session> playersInGame = connections.get(gameID);
+        playersInGame.add(session);
+        connections.put(gameID, playersInGame);
     }
 
-    public void remove(Session session) {
-        connections.remove(session);
+    public void remove(int gameID, Session session) {
+        // Removes user from a game
+        List<Session> players = connections.get(gameID);
+        players.remove(session);
+        connections.put(gameID, players);
     }
 
     public void broadcast(Session excludeSession, ServerMessage notification) throws IOException {
