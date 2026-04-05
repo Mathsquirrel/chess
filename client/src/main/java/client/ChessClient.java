@@ -268,14 +268,20 @@ public class ChessClient {
     }
 
     private void assertSignedIn() throws ResponseException {
-        if (state == State.SIGNEDOUT) {
-            throw new ResponseException("You must sign in");
+        if (state != State.SIGNEDIN) {
+            throw new ResponseException("You must sign in and not be in a game");
         }
     }
 
     private void assertSignedOut() throws ResponseException {
-        if (state == State.SIGNEDIN) {
+        if (state != State.SIGNEDOUT) {
             throw new ResponseException("You must be signed out");
+        }
+    }
+
+    private void assertInGame() throws ResponseException{
+        if(state != INGAME){
+            throw new ResponseException("You must be in a game");
         }
     }
 }
