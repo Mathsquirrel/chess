@@ -1,6 +1,7 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.SQLAuthTokenAccess;
 import exception.ResponseException;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -8,6 +9,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import model.AuthData;
 import org.eclipse.jetty.websocket.api.Session;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
@@ -87,7 +89,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void getUsername(String authToken){
-
+    private String getUsername(String authToken) throws ResponseException {
+        SQLAuthTokenAccess authData = new SQLAuthTokenAccess();
+        AuthData requestedUser = authData.getAuth(authToken);
+        if(requestedUser == null){
+            return null;
+        }
+        return requestedUser.username();
     }
 }
