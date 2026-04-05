@@ -24,11 +24,18 @@ public class ConnectionManager {
         connections.put(gameID, playersInGame);
     }
 
-    public void remove(int gameID, Session session) {
+    public void remove(Session session) {
         // Removes user from a game
-        List<Session> players = connections.get(gameID);
-        players.remove(session);
-        connections.put(gameID, players);
+        connections.forEach((gameID, values) -> {
+            for(Session c : values){
+                if(c.isOpen()){
+                    if(c.equals(session)){
+                        values.remove(session);
+                        connections.put(gameID, values);
+                    }
+                }
+            }
+        });
     }
 
     public void broadcast(Session excludeSession, ServerMessage notification) throws IOException {
