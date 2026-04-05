@@ -24,7 +24,7 @@ public class ServerMessage {
 
     public ServerMessage(ServerMessageType type, String message){
         this.serverMessageType = type;
-        this.message = message;
+        this.message = message + "\n";
     }
 
     public ServerMessageType getServerMessageType() {

@@ -6,6 +6,7 @@ import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
@@ -40,6 +41,11 @@ public class ChessClient {
             }
         }
         System.out.println();
+    }
+
+    public void notify(ServerMessage notification) {
+        System.out.println(notification.getServerMessage());
+        printPrompt();
     }
 
     private void printPrompt() {

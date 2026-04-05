@@ -61,8 +61,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(session, notification);
     }
 
-    private void leaveGame(String authToken, Session session) throws IOException, ResponseException {
-        String leaveMessage = getUsername(authToken) + "has left the game";
+    private void leaveGame(String username, Session session) throws IOException, ResponseException {
+        String leaveMessage = username + "has left the game";
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leaveMessage);
         connections.broadcast(session, notification);
         connections.remove(session);
@@ -77,12 +77,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    public void resign(String authToken, int gameID) throws ResponseException {
+    public void resign(Session session, String username, ResignCommand command) throws ResponseException {
         try {
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+            String resignMessage = username + "resigned";
+            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignMessage);
             connections.broadcast(null, notification);
         } catch (Exception ex) {
-            throw new ResponseException("Test");
+            throw new ResponseException("Error: Unexpected Values");
         }
     }
 
