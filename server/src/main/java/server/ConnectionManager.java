@@ -32,7 +32,7 @@ public class ConnectionManager {
     }
 
     public void broadcast(Session excludeSession, ServerMessage notification) throws IOException {
-        String msg = notification.toString();
+        String msg = notification.getServerMessage();
         for (List<Session> game : connections.values()) {
             for (Session c : game) {
                 if (c.isOpen()) {
@@ -44,8 +44,8 @@ public class ConnectionManager {
         }
     }
 
-    public void sendMessage(Session currentSession, int gameID, ServerMessage notification) throws IOException{
-        String msg = notification.toString();
+    public void sendMessage(Session currentSession, ServerMessage notification) throws IOException{
+        String msg = notification.getServerMessage();
         for (List<Session> game : connections.values()) {
             for (Session c : game) {
                 if (c.isOpen()) {

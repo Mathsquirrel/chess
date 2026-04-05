@@ -2,7 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.SQLAuthTokenAccess;
-import exception.ResponseException;
+import exception.*;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
 import io.javalin.websocket.WsConnectContext;
@@ -44,11 +44,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
                 case RESIGN -> resign(session, username, (ResignCommand) command);
             }
-        } catch (UnauthorizedException ex) {
-            sendMessage(session, gameId, new ErrorMessage("Error: unauthorized"));
         } catch (Exception ex) {
-            ex.printStackTrace();
-            sendMessage(session, gameId, new ErrorMessage("Error: " + ex.getMessage()));
+            connections.sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
         }
     }
 
@@ -59,14 +56,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String authToken, Session session) throws IOException {
-        connections.add(session);
+    private void connect(String authToken, String username, Session session) throws IOException {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         connections.broadcast(session, notification);
     }
 
-    private void leaveGame(String authToken, Session session) throws IOException {
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
+    private void leaveGame(String authToken, Session session) throws IOException, ResponseException {
+        String leaveMessage = getUsername(authToken) + "has left the game";
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leaveMessage);
         connections.broadcast(session, notification);
         connections.remove(session);
     }
