@@ -2,27 +2,32 @@ package client;
 
 import chess.*;
 import chess.ChessGame.TeamColor;
+import client.websocket.WebSocketFacade;
 import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
 import websocket.messages.ServerMessage;
-
+import client.websocket.NotificationHandler;
 import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
 import static client.State.INGAME;
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler{
     private String visitorName = null;
     private String visitorAuth = "";
+    private ChessGame currentGame = null;
+    private TeamColor currentColor = null;
     private final ServerFacade server;
-    private final WebsocketFacade ws;
+    private final WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
     private static int[] gameNums = new int[100];
+    private static final String[] rowLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
 
-    public ChessClient(String serverUrl) {
+    public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        ws = new WebSocketFacade(serverUrl, this);
     }
 
     public void run() {
@@ -72,6 +77,7 @@ public class ChessClient {
                 case "move" -> makeMove(params);
                 case "resign" -> resign();
                 case "highlight" -> highlight(params);
+                case "clear" -> clear();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -84,8 +90,10 @@ public class ChessClient {
         return null;
     }
 
-    public String redraw(){
-        return null;
+    public String redraw() throws ResponseException {
+        assertInGame();
+        PrintBoard.print(currentGame, currentColor);
+        return "";
     }
 
     public String makeMove(String... params){
@@ -96,8 +104,29 @@ public class ChessClient {
         return null;
     }
 
-    public String highlight(String... params){
-        return null;
+    public String highlight(String... params) throws ResponseException {
+        if(params.length == 2) {
+            String[] coords = params[0].split(",");
+            if(!Arrays.asList(rowLetters).contains(params[0]) || !coords[1].matches("\\d+")){
+                // If column isn't an actual column letter or the row isn't a number
+                throw new ResponseException("Error: Row wasn't a number or Col wasn't an expected letter");
+            }
+            int row = Integer.parseInt(coords[1]);
+            int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
+            if(row < 1 || row > 8){
+                // If the row was out of bounds
+                throw new ResponseException("Error: Given Row wasn't between 1 and 8");
+            }
+            ChessPosition highlightSquare = new ChessPosition(row, col);
+            PrintBoard.highlight(currentGame, currentColor, highlightSquare);
+            return "";
+        }
+        throw new ResponseException("Error: Expected <COL,ROW>");
+    }
+
+    public String clear() throws ResponseException {
+        server.clear();
+        return "You have cleared the database";
     }
 
     public String register(String... params) throws ResponseException {
@@ -173,8 +202,8 @@ public class ChessClient {
             try {
                 // Convert provided ID to gameID
                 int id = Integer.parseInt(params[0]);
-                if(!Collections.singletonList(gameNums).contains(id)){
-                    throw new ResponseException("Error: Game ID does not exist");
+                if(!contains(gameNums, id)){
+                    throw new ResponseException("Error: GameID does not exist");
                 }
                 id = gameNums[id];
                 ListGamesData game = getGame(id);
@@ -190,7 +219,11 @@ public class ChessClient {
                 if (game != null) {
                     JoinGameRequest joinAttempt = new JoinGameRequest(color, id);
                     server.joinGame(joinAttempt, visitorAuth);
-                    PrintBoard.print(game.chessGame().game(), color);
+                    currentGame = game.chessGame().game();
+                    currentColor = color;
+                    state = INGAME;
+                    PrintBoard.print(currentGame, color);
+                    ws.joinedGame(visitorName);
                     return String.format("You has joined Game %d as %s", id, playerColor);
                 }
             } catch (NumberFormatException ignored) {
@@ -290,5 +323,14 @@ public class ChessClient {
         if(state != INGAME){
             throw new ResponseException("You must be in a game");
         }
+    }
+
+    private boolean contains(int[] array, int key) {
+        for (int i : array) {
+            if (i == key) {
+                return true;
+            }
+        }
+        return false;
     }
 }

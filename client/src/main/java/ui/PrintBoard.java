@@ -2,6 +2,7 @@ package ui;
 
 import chess.ChessGame;
 import chess.ChessPiece;
+import chess.ChessPosition;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -19,6 +20,10 @@ public class PrintBoard {
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 0;
     private static int colorCorrector;
     private static final String[] SMALL_HEADERS = { " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
+
+    public static void highlight(ChessGame game, TeamColor printPerspective, ChessPosition highlightSquare){
+
+    }
 
     public static void print(ChessGame game, TeamColor printPerspective) {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
@@ -167,4 +172,5 @@ public class PrintBoard {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_DARK_GREY);
     }
+
 }

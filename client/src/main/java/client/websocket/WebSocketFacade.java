@@ -43,6 +43,15 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
+    public void joinedGame(String visitorName) throws ResponseException {
+        try {
+            var message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, visitorName);
+            this.session.getBasicRemote().sendText(new Gson().toJson(message));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
     /* CODE TO REFERENCE IF NEEDED
     public void enterPetShop(String visitorName) throws ResponseException {
         try {
