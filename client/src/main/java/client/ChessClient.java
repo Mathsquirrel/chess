@@ -28,6 +28,7 @@ public class ChessClient implements NotificationHandler{
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
         ws = new WebSocketFacade(serverUrl, this);
+
     }
 
     public void run() {
@@ -92,7 +93,7 @@ public class ChessClient implements NotificationHandler{
 
     public String redraw() throws ResponseException {
         assertInGame();
-        PrintBoard.print(currentGame, currentColor);
+        PrintBoard.print(currentGame, currentColor, null);
         return "";
     }
 
@@ -105,11 +106,16 @@ public class ChessClient implements NotificationHandler{
     }
 
     public String highlight(String... params) throws ResponseException {
-        if(params.length == 2) {
-            String[] coords = params[0].split(",");
-            if(!Arrays.asList(rowLetters).contains(params[0]) || !coords[1].matches("\\d+")){
+        if(params.length == 1) {
+            if(params[0].length() != 2){
+                throw new ResponseException("Error: Expected <COLROW> (Ex: a2)");
+            }
+            String[] coords = new String[2];
+            coords[0] = params[0].substring(0,1);
+            coords[1] = params[0].substring(1);
+            if(!Arrays.asList(rowLetters).contains(coords[0]) || !coords[1].matches("\\d+")){
                 // If column isn't an actual column letter or the row isn't a number
-                throw new ResponseException("Error: Row wasn't a number or Col wasn't an expected letter");
+                throw new ResponseException("Error: Col wasn't an expected letter or Row wasn't a number");
             }
             int row = Integer.parseInt(coords[1]);
             int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
@@ -121,7 +127,7 @@ public class ChessClient implements NotificationHandler{
             PrintBoard.highlight(currentGame, currentColor, highlightSquare);
             return "";
         }
-        throw new ResponseException("Error: Expected <COL,ROW>");
+        throw new ResponseException("Error: Expected <COLROW> (Ex: a2)");
     }
 
     public String clear() throws ResponseException {
@@ -222,7 +228,7 @@ public class ChessClient implements NotificationHandler{
                     currentGame = game.chessGame().game();
                     currentColor = color;
                     state = INGAME;
-                    PrintBoard.print(currentGame, color);
+                    PrintBoard.print(currentGame, color, null);
                     ws.joinedGame(visitorName);
                     return String.format("You has joined Game %d as %s", id, playerColor);
                 }
@@ -265,7 +271,7 @@ public class ChessClient implements NotificationHandler{
         boolean foundGame = false;
         for (ListGamesData game : server.listGames(visitorAuth).games()) {
             if (game.gameID() == id) {
-                PrintBoard.print(game.chessGame().game(), WHITE);
+                PrintBoard.print(game.chessGame().game(), WHITE, null);
                 foundGame = true;
             }
         }
@@ -299,9 +305,9 @@ public class ChessClient implements NotificationHandler{
             return """
                     - redraw - redraws the chess board
                     - leave - leaves the game
-                    - move <COL,ROW> <COL,ROW> - moves the piece at the first position to the second
+                    - move <COLROW> <COLROW> (Ex: a2 a3) - moves the piece at the first position to the second
                     - resign - forfeit and end the game
-                    - highlight <COL,ROW> - highlight all legal moves for that piece
+                    - highlight <COLROW> (Ex:a2) - highlight all legal moves for that piece
                     - help - shows all possible commands
                     """;
         }

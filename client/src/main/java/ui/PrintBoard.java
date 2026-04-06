@@ -1,11 +1,12 @@
 package ui;
 
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Objects;
 
 import static chess.ChessGame.TeamColor.*;
 import static chess.ChessGame.TeamColor;
@@ -20,12 +21,22 @@ public class PrintBoard {
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 0;
     private static int colorCorrector;
     private static final String[] SMALL_HEADERS = { " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
-
+    private static final String HIGHLIGHT_LIGHT = SET_BG_COLOR_BLUE;
+    private static final String HIGHLIGHT_DARK = SET_BG_COLOR_RED;
+    private static Collection<ChessPosition> allHighlightSquares;
     public static void highlight(ChessGame game, TeamColor printPerspective, ChessPosition highlightSquare){
-
+        // Prints a chess board with the valid moves of a piece highlighted
+        allHighlightSquares = new ArrayList<>();
+        Collection<ChessMove> allPossibleMoves = game.validMoves(highlightSquare);
+        for(ChessMove move : allPossibleMoves){
+            allHighlightSquares.add(move.getEndPosition());
+        }
+        print(game, printPerspective, allHighlightSquares);
     }
 
-    public static void print(ChessGame game, TeamColor printPerspective) {
+    public static void print(ChessGame game, TeamColor printPerspective, Collection<ChessPosition> highlightSquares) {
+        allHighlightSquares = highlightSquares;
+        // Prints out the given chess board from the given perspective
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         if(printPerspective == BLACK){
             colorCorrector = 7;
@@ -116,9 +127,9 @@ public class PrintBoard {
                     }
                 }
                 if(firstSquareWhite){
-                    out.print(SET_BG_COLOR_LIGHT_GREY);
+                    out.print(highlightCheck(rowNum, boardCol, SET_BG_COLOR_LIGHT_GREY));
                 }else{
-                    out.print(SET_BG_COLOR_DARK_GREEN);
+                    out.print(highlightCheck(rowNum, boardCol, SET_BG_COLOR_DARK_GREEN));
                 }
                 firstSquareWhite = !firstSquareWhite;
                 if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
@@ -171,6 +182,20 @@ public class PrintBoard {
     private static void setDarkGrey(PrintStream out) {
         out.print(SET_BG_COLOR_DARK_GREY);
         out.print(SET_TEXT_COLOR_DARK_GREY);
+    }
+
+    private static String highlightCheck(int row, int col, String color){
+        if(allHighlightSquares == null){
+            return color;
+        }
+        if(allHighlightSquares.contains(new ChessPosition(row + 1, col + 1))){
+            if(Objects.equals(color, SET_BG_COLOR_LIGHT_GREY)){
+                return HIGHLIGHT_LIGHT;
+            }else{
+                return HIGHLIGHT_DARK;
+            }
+        }
+        return color;
     }
 
 }
