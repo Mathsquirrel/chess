@@ -11,8 +11,7 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
 import org.eclipse.jetty.websocket.api.Session;
-import websocket.commands.MakeMoveCommand;
-import websocket.commands.UserGameCommand;
+import websocket.commands.*;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -57,19 +56,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(String authToken, String username, Session session) throws IOException {
+    private void connect(Session session, String username, ConnectCommand command) throws IOException {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         connections.broadcast(session, notification);
     }
 
-    private void leaveGame(String username, Session session) throws IOException, ResponseException {
+    private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException, ResponseException {
         String leaveMessage = username + "has left the game";
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leaveMessage);
         connections.broadcast(session, notification);
         connections.remove(session);
     }
 
-    public void makeMove(String authToken, int gameID, MakeMoveCommand moveCommand) throws ResponseException {
+    public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException {
         try {
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             connections.broadcast(null, notification);
