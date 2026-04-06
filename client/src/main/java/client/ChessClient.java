@@ -17,6 +17,7 @@ public class ChessClient {
     private String visitorName = null;
     private String visitorAuth = "";
     private final ServerFacade server;
+    private final WebsocketFacade ws;
     private State state = State.SIGNEDOUT;
     private static int[] gameNums = new int[100];
 
