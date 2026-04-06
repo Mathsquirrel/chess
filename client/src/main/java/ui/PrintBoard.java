@@ -147,7 +147,6 @@ public class PrintBoard {
                     }
                     ChessPiece currentPiece = game.getBoard().getBoardState()[Math.abs(tempCorrector-rowNum)][Math.abs(colorCorrector -boardCol)];
 
-                    // ALL I'm DOING IS MIRRORING THE BOARD. KING AND QUEEN ARE NOT ROTATING LIKE THEY SHOULD, THEY'RE MIRRORING
                     if(currentPiece == null) {
 
                     }else if(currentPiece.getTeamColor() == WHITE) {
