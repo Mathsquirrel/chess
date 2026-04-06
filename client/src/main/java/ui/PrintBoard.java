@@ -24,12 +24,16 @@ public class PrintBoard {
     private static final String HIGHLIGHT_LIGHT = SET_BG_COLOR_BLUE;
     private static final String HIGHLIGHT_DARK = SET_BG_COLOR_RED;
     private static Collection<ChessPosition> allHighlightSquares;
+    private static ChessPosition highlightPiece;
     public static void highlight(ChessGame game, TeamColor printPerspective, ChessPosition highlightSquare){
         // Prints a chess board with the valid moves of a piece highlighted
+        highlightPiece = highlightSquare;
         allHighlightSquares = new ArrayList<>();
         Collection<ChessMove> allPossibleMoves = game.validMoves(highlightSquare);
-        for(ChessMove move : allPossibleMoves){
-            allHighlightSquares.add(move.getEndPosition());
+        if(allPossibleMoves != null) {
+            for (ChessMove move : allPossibleMoves) {
+                allHighlightSquares.add(move.getEndPosition());
+            }
         }
         print(game, printPerspective, allHighlightSquares);
     }
@@ -188,13 +192,20 @@ public class PrintBoard {
         if(allHighlightSquares == null){
             return color;
         }
-        if(allHighlightSquares.contains(new ChessPosition(row + 1, col + 1))){
+        int tempCorrector = 9;
+        if(colorCorrector == 7){
+            tempCorrector = 0;
+        }
+        if(allHighlightSquares.contains(new ChessPosition(Math.abs((row + 1) - tempCorrector), col + 1))){
             if(Objects.equals(color, SET_BG_COLOR_LIGHT_GREY)){
                 return HIGHLIGHT_LIGHT;
             }else{
                 return HIGHLIGHT_DARK;
             }
         }
+        // IF (calculated way to find square).equals(highlightedPiece)
+        // Set to yellow background
+
         return color;
     }
 

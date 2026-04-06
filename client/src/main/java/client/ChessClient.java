@@ -13,6 +13,7 @@ import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
 import static client.State.INGAME;
+import static client.State.SIGNEDIN;
 
 public class ChessClient implements NotificationHandler{
     private String visitorName = null;
@@ -87,8 +88,12 @@ public class ChessClient implements NotificationHandler{
         }
     }
 
-    public String leaveGame(){
-        return null;
+    public String leaveGame() throws ResponseException {
+        assertInGame();
+        // Logic for removing a player from the game
+        // According to prof, can just function like resign for testing purposes
+        state = SIGNEDIN;
+        return "";
     }
 
     public String redraw() throws ResponseException {
@@ -119,6 +124,9 @@ public class ChessClient implements NotificationHandler{
             }
             int row = Integer.parseInt(coords[1]);
             int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
+            if(currentColor == BLACK){
+                col = 9-col;
+            }
             if(row < 1 || row > 8){
                 // If the row was out of bounds
                 throw new ResponseException("Error: Given Row wasn't between 1 and 8");
