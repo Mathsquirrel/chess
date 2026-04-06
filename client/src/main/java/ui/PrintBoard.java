@@ -22,7 +22,7 @@ public class PrintBoard {
     private static int colorCorrector;
     private static final String[] SMALL_HEADERS = { " 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
     private static final String HIGHLIGHT_LIGHT = SET_BG_COLOR_BLUE;
-    private static final String HIGHLIGHT_DARK = SET_BG_COLOR_RED;
+    private static final String HIGHLIGHT_DARK = SET_BG_COLOR_GREEN;
     private static Collection<ChessPosition> allHighlightSquares;
     private static ChessPosition highlightPiece;
     public static void highlight(ChessGame game, TeamColor printPerspective, ChessPosition highlightSquare){
@@ -203,9 +203,9 @@ public class PrintBoard {
                 return HIGHLIGHT_DARK;
             }
         }
-        // IF (calculated way to find square).equals(highlightedPiece)
-        // Set to yellow background
-
+        if(new ChessPosition(Math.abs((row + 1) - tempCorrector), col + 1).equals(highlightPiece)){
+            return SET_BG_COLOR_RED;
+        }
         return color;
     }
 
