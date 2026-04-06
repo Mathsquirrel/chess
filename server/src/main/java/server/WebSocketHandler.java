@@ -11,6 +11,7 @@ import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
 import org.eclipse.jetty.websocket.api.Session;
+import org.jetbrains.annotations.NotNull;
 import websocket.commands.*;
 import websocket.messages.ServerMessage;
 
@@ -52,13 +53,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
 
     @Override
-    public void handleClose(WsCloseContext ctx) {
+    public void handleClose(@NotNull WsCloseContext ctx) {
         System.out.println("Websocket closed");
     }
 
     private void connect(Session session, String username, ConnectCommand command) throws IOException {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-        connections.broadcast(session, notification);
+        var broadcastJoin = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "TESTING PLAYER JOINED");
+        connections.sendMessage(session, notification);
+        connections.broadcast(session, broadcastJoin);
     }
 
     private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException, ResponseException {

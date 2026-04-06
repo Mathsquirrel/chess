@@ -17,6 +17,7 @@ public class Server {
     static GameAccess gameList;
     static UserAccess userList;
     private final Javalin javalin;
+    private final WebSocketHandler webSocketHandler;
 
 
     public Server() {
@@ -35,14 +36,22 @@ public class Server {
         }catch(ResponseException e){
             System.out.printf("Unable to start server: %s%n", e.getMessage());
         }
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
-        javalin.post("/session", Server::handleLogin);
-        javalin.delete("/session", Server::handleLogout);
-        javalin.delete("/db", Server::handleClear);
-        javalin.post("/user", Server::handleRegister);
-        javalin.put("/game", Server::handleJoinGame);
-        javalin.post("/game", Server::handleCreateGame);
-        javalin.get("/game", Server::handleListGames);
+
+        webSocketHandler = new WebSocketHandler();
+
+        javalin = Javalin.create(config -> config.staticFiles.add("web"))
+                .post("/session", Server::handleLogin)
+                .delete("/session", Server::handleLogout)
+                .delete("/db", Server::handleClear)
+                .post("/user", Server::handleRegister)
+                .put("/game", Server::handleJoinGame)
+                .post("/game", Server::handleCreateGame)
+                .get("/game", Server::handleListGames)
+                .ws("/ws", ws -> {
+                    ws.onConnect(webSocketHandler);
+                    ws.onMessage(webSocketHandler);
+                    ws.onClose(webSocketHandler);
+                });
 
         javalin.exception(BadRequestException.class, (e, ctx) -> {
             ctx.status(400);
