@@ -13,7 +13,7 @@ import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
 import static client.State.INGAME;
-import static client.State.SIGNEDIN;
+import static chess.ChessPiece.PieceType.*;
 
 public class ChessClient implements NotificationHandler{
     private String visitorName = null;
@@ -83,16 +83,13 @@ public class ChessClient implements NotificationHandler{
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (ResponseException ex) {
+        } catch (ResponseException | InvalidMoveException ex) {
             return ex.getMessage();
         }
     }
 
     public String leaveGame() throws ResponseException {
-        assertInGame();
-        // Logic for removing a player from the game
-        // According to prof, can just function like resign for testing purposes
-        state = SIGNEDIN;
+        resign();
         return "";
     }
 
@@ -102,35 +99,67 @@ public class ChessClient implements NotificationHandler{
         return "";
     }
 
-    public String makeMove(String... params){
-        return null;
+    public String makeMove(String... params) throws ResponseException, InvalidMoveException {
+
+        // Might still need to color correct based on board
+
+        if(params.length != 2){
+            throw new ResponseException("Expected format: move <COLROW> <COLROW> (Ex: a7 a8->Queen) (->PIECE only needed for promotion)");
+        }
+        int[] startCoords = validateInput(params[0]);
+        ChessPosition startPosition = new ChessPosition(startCoords[0], startCoords[1]);
+        int[] endCoords = validateInput(params[1]);
+        ChessPosition endPosition = new ChessPosition(endCoords[0], endCoords[1]);
+        ChessPiece.PieceType promotionPiece = null;
+        if(currentGame.getBoard().getPiece(startPosition).getPieceType() == PAWN){
+            if(endPosition.getRow() == 1 || endPosition.getRow() == 8){
+                // If pawn would promote
+                if(params[1].length() == 2){
+                    throw new ResponseException("Error: Pawn will promote. Should include ->PIECE");
+                }
+                String promotion = params[1].substring(2);
+                switch(promotion.toLowerCase()){
+                    case "king":
+                        promotionPiece = KING;
+                    case "queen":
+                        promotionPiece = QUEEN;
+                    case "rook":
+                        promotionPiece = ROOK;
+                    case "bishop":
+                        promotionPiece = BISHOP;
+                    case "knight":
+                        promotionPiece = KNIGHT;
+                    default:
+                        throw new ResponseException("Error: Expected a non-pawn piece to promote to");
+                }
+            }
+        }
+        ChessMove attemptedMove = new ChessMove(startPosition, endPosition, promotionPiece);
+        try {
+            currentGame.makeMove(attemptedMove);
+        } catch (InvalidMoveException e) {
+            throw new ResponseException("Error: Inputted move is impossible. Use 'highlight' command for help");
+        }
+        // Need to update game in server here
+        redraw();
+        return "You made the move "+ Arrays.toString(params);
+
+        // Send message to notify other user that game changed and print it
     }
 
     public String resign(){
-        return null;
+        return "";
     }
 
     public String highlight(String... params) throws ResponseException {
+        int[] coords = validateInput(params);
+        int row = coords[0];
+        int col = coords[1];
         if(params.length == 1) {
             if(params[0].length() != 2){
                 throw new ResponseException("Error: Expected <COLROW> (Ex: a2)");
             }
-            String[] coords = new String[2];
-            coords[0] = params[0].substring(0,1);
-            coords[1] = params[0].substring(1);
-            if(!Arrays.asList(rowLetters).contains(coords[0]) || !coords[1].matches("\\d+")){
-                // If column isn't an actual column letter or the row isn't a number
-                throw new ResponseException("Error: Col wasn't an expected letter or Row wasn't a number");
-            }
-            int row = Integer.parseInt(coords[1]);
-            int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
-            if(currentColor == BLACK){
-                col = 9-col;
-            }
-            if(row < 1 || row > 8){
-                // If the row was out of bounds
-                throw new ResponseException("Error: Given Row wasn't between 1 and 8");
-            }
+
             ChessPosition highlightSquare = new ChessPosition(row, col);
             PrintBoard.highlight(currentGame, currentColor, highlightSquare);
             return "";
@@ -313,7 +342,7 @@ public class ChessClient implements NotificationHandler{
             return """
                     - redraw - redraws the chess board
                     - leave - leaves the game
-                    - move <COLROW> <COLROW> (Ex: a2 a3) - moves the piece at the first position to the second
+                    - move <COLROW> <COLROW> (Ex: a7 a8->Queen) - moves the piece at the first position to the second. (->PIECE needed for promotion)
                     - resign - forfeit and end the game
                     - highlight <COLROW> (Ex:a2) - highlight all legal moves for that piece
                     - help - shows all possible commands
@@ -346,5 +375,25 @@ public class ChessClient implements NotificationHandler{
             }
         }
         return false;
+    }
+
+    private int[] validateInput(String... params) throws ResponseException {
+        String[] coords = new String[2];
+        coords[0] = params[0].substring(0,1);
+        coords[1] = params[0].substring(1,2);
+        if(!Arrays.asList(rowLetters).contains(coords[0]) || !coords[1].matches("\\d+")){
+            // If column isn't an actual column letter or the row isn't a number
+            throw new ResponseException("Error: Col wasn't an expected letter or Row wasn't a number");
+        }
+        int row = Integer.parseInt(coords[1]);
+        int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
+        if(currentColor == BLACK){
+            col = 9-col;
+        }
+        if(row < 1 || row > 8){
+            // If the row was out of bounds
+            throw new ResponseException("Error: Given Row wasn't between 1 and 8");
+        }
+        return new int[]{row, col};
     }
 }

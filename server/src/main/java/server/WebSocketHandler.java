@@ -72,6 +72,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException {
+
+        // When the move is received, update the game with the made move and send the notification
+
         try {
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
             connections.broadcast(null, notification);
