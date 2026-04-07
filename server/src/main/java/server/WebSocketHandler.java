@@ -9,6 +9,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
+import jakarta.websocket.OnOpen;
 import model.AuthData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
@@ -40,31 +41,28 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             connections.add(gameId, session); // Save the session
 
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, (ConnectCommand) command);
+                case CONNECT -> connect(session, username, command);
                 case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
-                case LEAVE -> leaveGame(session, username, (LeaveGameCommand) command);
-                case RESIGN -> resign(session, username, (ResignCommand) command);
+                case LEAVE -> leaveGame(session, username, command);
+                case RESIGN -> resign(session, username, command);
             }
         } catch (Exception ex) {
             connections.sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
         }
     }
-
-
-
     @Override
     public void handleClose(@NotNull WsCloseContext ctx) {
         System.out.println("Websocket closed");
     }
 
-    private void connect(Session session, String username, ConnectCommand command) throws IOException {
+    private void connect(Session session, String username, UserGameCommand command) throws IOException {
         var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
         var broadcastJoin = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "TESTING PLAYER JOINED");
         connections.sendMessage(session, notification);
         connections.broadcast(session, broadcastJoin);
     }
 
-    private void leaveGame(Session session, String username, LeaveGameCommand command) throws IOException, ResponseException {
+    private void leaveGame(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         String leaveMessage = username + "has left the game";
         var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leaveMessage);
         connections.broadcast(session, notification);
@@ -83,7 +81,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    public void resign(Session session, String username, ResignCommand command) throws ResponseException {
+    public void resign(Session session, String username, UserGameCommand command) throws ResponseException {
         try {
             String resignMessage = username + "resigned";
             var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignMessage);
