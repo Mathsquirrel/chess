@@ -52,7 +52,7 @@ public class ConnectionManager {
     }
 
     public void sendMessage(Session currentSession, ServerMessage notification) throws IOException{
-        String msg = notification.getServerMessage();
+        String msg = notification.toString();
         for (List<Session> game : connections.values()) {
             for (Session c : game) {
                 if (c.isOpen()) {

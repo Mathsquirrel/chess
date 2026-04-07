@@ -55,7 +55,7 @@ public class WebSocketFacade extends Endpoint {
 
     public void resigned(String visitorName) throws ResponseException {
         try {
-            var message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, visitorName);
+            var message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
             this.session.getBasicRemote().sendText(new Gson().toJson(message));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());

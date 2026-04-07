@@ -8,5 +8,5 @@ public class ErrorMessage extends ServerMessage {
         this.message = message + "\n";
     }
 
-    public String getErrorMessage(){ return this.message;}
+    public String getServerMessage(){ return this.message;}
 }

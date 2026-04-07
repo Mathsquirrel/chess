@@ -10,5 +10,9 @@ public class LoadGameMessage extends ServerMessage {
         this.game = game;
     }
 
+    public String getServerMessage() {
+        return super.getServerMessage();
+    }
+
     public ChessGame getGame(){ return this.game;}
 }

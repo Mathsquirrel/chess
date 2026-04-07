@@ -11,13 +11,10 @@ import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
 import model.AuthData;
-import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.*;
-import websocket.messages.LoadGameMessage;
-import websocket.messages.NotificationMessage;
-import websocket.messages.ServerMessage;
+import websocket.messages.*;
 
 import java.io.IOException;
 
@@ -48,7 +45,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case RESIGN -> resign(session, username, command);
             }
         } catch (Exception ex) {
-            connections.sendMessage(session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
+            connections.sendMessage(session, new ErrorMessage("Error: Malformed Message"));
         }
     }
     @Override
@@ -67,6 +64,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var notification = new NotificationMessage(message);
         ChessGame requestedGame = getGame(command.getGameID());
         var loadGame = new LoadGameMessage(requestedGame);
+
         connections.broadcast(session, notification);
         connections.sendMessage(session, loadGame);
     }
