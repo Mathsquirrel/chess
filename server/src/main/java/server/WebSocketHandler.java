@@ -1,7 +1,8 @@
 package server;
 
+import chess.ChessGame;
 import com.google.gson.Gson;
-import dataaccess.SQLAuthTokenAccess;
+import dataaccess.*;
 import exception.*;
 import io.javalin.websocket.WsCloseContext;
 import io.javalin.websocket.WsCloseHandler;
@@ -9,11 +10,13 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
-import jakarta.websocket.OnOpen;
 import model.AuthData;
+import model.GameData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.*;
+import websocket.messages.LoadGameMessage;
+import websocket.messages.NotificationMessage;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -53,7 +56,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         System.out.println("Websocket closed");
     }
 
-    private void connect(Session session, String username, UserGameCommand command) throws IOException {
+    private void connect(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         connections.add(command.getGameID(), session);
 
         // If a player joined, include color. If observer, don't
@@ -61,15 +64,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         // Create 3 subclasses of ServerMessage. Instantiate those here and then send those as the message from connections
         // Error and notification have a string, Load_game has a game object it sends
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
-        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
+        var notification = new NotificationMessage(message);
+        ChessGame requestedGame = getGame(command.getGameID());
+        var loadGame = new LoadGameMessage(requestedGame);
         connections.broadcast(session, notification);
         connections.sendMessage(session, loadGame);
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         String leaveMessage = username + "has left the game";
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leaveMessage);
+        var notification = new NotificationMessage(leaveMessage);
         connections.broadcast(session, notification);
         connections.remove(session);
     }
@@ -89,7 +93,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     public void resign(Session session, String username, UserGameCommand command) throws ResponseException {
         try {
             String resignMessage = username + "resigned";
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignMessage);
+            var notification = new NotificationMessage(resignMessage);
             connections.broadcast(null, notification);
         } catch (Exception ex) {
             throw new ResponseException("Error: Unexpected Values");
@@ -103,5 +107,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return null;
         }
         return requestedUser.username();
+    }
+
+    private ChessGame getGame(int gameID) throws ResponseException {
+        SQLGameAccess gameData = new SQLGameAccess();
+        ChessGame requestedGame = gameData.getGame(gameID).game();
+        if(requestedGame == null){
+            throw new ResponseException("Error: GameID was invalid");
+        }
+        return requestedGame;
     }
 }
