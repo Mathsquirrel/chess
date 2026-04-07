@@ -36,9 +36,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand command = Serializer.fromJson(
                     wsMessageContext.message(), UserGameCommand.class);
-            gameId = command.getGameID();
             String username = getUsername(command.getAuthToken());
-            connections.add(gameId, session); // Save the session
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
@@ -56,10 +54,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException {
-        var notification = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-        var broadcastJoin = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "TESTING PLAYER JOINED");
-        connections.sendMessage(session, notification);
-        connections.broadcast(session, broadcastJoin);
+        connections.add(command.getGameID(), session);
+
+        // If a player joined, include color. If observer, don't
+        var message = String.format("%s joined as COLOR", username);
+
+        // Create 3 subclasses of ServerMessage. Instantiate those here and then send those as the message from connections
+        // Error and notification have a string, Load_game has a game object it sends
+        var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, message);
+        var loadGame = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, "");
+        connections.broadcast(session, notification);
+        connections.sendMessage(session, loadGame);
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) throws IOException, ResponseException {

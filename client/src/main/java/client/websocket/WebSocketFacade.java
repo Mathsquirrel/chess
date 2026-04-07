@@ -2,6 +2,7 @@ package client.websocket;
 
 import com.google.gson.Gson;
 import exception.ResponseException;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import jakarta.websocket.*;
@@ -43,7 +44,16 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void joinedGame(String visitorName) throws ResponseException {
+    public void joinedGame(String authToken, int gameID) throws ResponseException {
+        try {
+            var connect = new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(connect));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void resigned(String visitorName) throws ResponseException {
         try {
             var message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, visitorName);
             this.session.getBasicRemote().sendText(new Gson().toJson(message));

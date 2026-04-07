@@ -29,7 +29,6 @@ public class ChessClient implements NotificationHandler{
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
         ws = new WebSocketFacade(serverUrl, this);
-
     }
 
     public void run() {
@@ -52,6 +51,7 @@ public class ChessClient implements NotificationHandler{
     }
 
     public void notify(ServerMessage notification) {
+        // SWITCH case to handle the 3 types of messages, ERROR, LOAD_GAME, and NOTIFICATION
         System.out.println(notification.getServerMessage());
         printPrompt();
     }
@@ -266,8 +266,11 @@ public class ChessClient implements NotificationHandler{
                     currentColor = color;
                     state = INGAME;
                     PrintBoard.print(currentGame, color, null);
-                    ws.joinedGame(visitorName);
-                    return String.format("You has joined Game %d as %s", id, playerColor);
+
+                    // Open a connection?
+
+                    ws.joinedGame(visitorAuth, game.gameID());
+                    return String.format("You have joined Game %d as %s", id, playerColor);
                 }
             } catch (NumberFormatException ignored) {
                 throw new ResponseException("Error: First parameter should be the Game's ID");
