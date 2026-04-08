@@ -19,6 +19,8 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 import static chess.ChessGame.TeamColor.*;
@@ -110,7 +112,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }else if(changedGame.getTeamTurn() != playerTrueColor){
             // If it is not the player's turn
             connections.sendMessage(session, new ErrorMessage("Error: It is not your turn"));
-        }else if(Objects.equals(checkGameEnd(changedGame), "Stalemate") || Objects.equals(checkGameEnd(changedGame), "Checkmate")) {
+        }else if(checkGameEnd(changedGame).contains("Stalemate") || checkGameEnd(changedGame).contains("Checkmate")) {
             // If the game has already ended
             connections.sendMessage(session, new ErrorMessage("Error: The game has already ended. You cannot make a move"));
         }else{
@@ -130,6 +132,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.broadcast(session, game);
                 connections.sendMessage(session, game);
                 connections.broadcast(session, moveMessage);
+                List<String> gameState = checkGameEnd(changedGame);
+                String colorInCheckmate = "";
+                String gameEnd = "The game has ended ";
+                if(gameState.contains("Stalemate")){
+                    connections.broadcast(session, new NotificationMessage(gameEnd + "in stalemate!"));
+                    connections.sendMessage(session, new NotificationMessage(gameEnd + "in stalemate!"));
+                }else if(gameState.contains("Checkmate")) {
+                    if(gameState.contains("Black")){
+                        colorInCheckmate = "Black";
+                    }else{
+                        colorInCheckmate = "White";
+                    }
+                    gameEnd = String.format("%s with %s in checkmate!", gameEnd, colorInCheckmate);
+                    connections.broadcast(session, new NotificationMessage(gameEnd));
+                    connections.sendMessage(session, new NotificationMessage(gameEnd));
+                }
             } else {
                 throw new ResponseException("Error: Move was invalid");
             }
@@ -168,14 +186,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         return authenticator.getAuth(authToken) != null;
     }
 
-    private String checkGameEnd(ChessGame game){
-        if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)) {
-            return "Stalemate";
-        }else if(game.isInCheckmate(WHITE) || game.isInCheckmate(BLACK)){
-            return "Checkmate";
-        }else{
-            return "";
+    private List<String> checkGameEnd(ChessGame game){
+        List<String> gameResult = new ArrayList<>();
+        if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)){
+            gameResult.add("Stalemate");
+        }else if(game.isInCheckmate(WHITE)){
+            gameResult.add("Checkmate");
+            gameResult.add("White");
+        }else if(game.isInCheckmate(BLACK)){
+            gameResult.add("Checkmate");
+            gameResult.add("Black");
         }
+        return gameResult;
     }
 
     private String getPlayerColor(String username, int gameID) throws ResponseException {
