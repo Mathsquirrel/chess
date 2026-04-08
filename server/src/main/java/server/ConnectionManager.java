@@ -27,14 +27,7 @@ public class ConnectionManager {
     public void remove(Session session) {
         // Removes user from a game
         connections.forEach((gameID, values) -> {
-            for(Session c : values){
-                if(c.isOpen()){
-                    if(c.equals(session)){
-                        values.remove(session);
-                        connections.put(gameID, values);
-                    }
-                }
-            }
+            values.remove(session);
         });
     }
 

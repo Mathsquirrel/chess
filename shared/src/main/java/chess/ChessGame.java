@@ -53,7 +53,8 @@ public class ChessGame {
      */
     public enum TeamColor {
         WHITE,
-        BLACK
+        BLACK,
+        RESIGNED
     }
 
     /**
@@ -104,7 +105,7 @@ public class ChessGame {
             }
             if(currentTeam == TeamColor.WHITE){
                 setTeamTurn(TeamColor.BLACK);
-            }else{
+            }else if(currentTeam == TeamColor.BLACK){
                 setTeamTurn(TeamColor.WHITE);
             }
         }else{

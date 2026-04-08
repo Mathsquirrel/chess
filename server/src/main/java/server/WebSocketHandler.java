@@ -68,14 +68,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if(temp == null){
             errorMessage = "Error: Invalid GameID";
             connections.sendMessage(session, new ErrorMessage(errorMessage));
-        }else if(!authenticate(authToken)){
+        }else if(authenticate(authToken)){
             errorMessage = "Error: Not Signed in or bad authorization";
             connections.sendMessage(session, new ErrorMessage(errorMessage));
         }else {
             connections.add(gameID, session);
 
             // If a player joined, include color. If observer, don't
-            var message = String.format("%s joined as %s", username, getPlayerColor(username, gameID).toString());
+            var message = String.format("%s joined as %s", username, getPlayerColor(username, gameID));
             var notification = new NotificationMessage(message);
             ChessGame requestedGame = getGame(gameID);
             var loadGame = new LoadGameMessage(requestedGame);
@@ -88,6 +88,18 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void leaveGame(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         String leaveMessage = username + "has left the game";
         var notification = new NotificationMessage(leaveMessage);
+        SQLGameAccess leaveGameUpdate = new SQLGameAccess();
+        String playerColor = getPlayerColor(username, command.getGameID());
+        GameData oldGame = leaveGameUpdate.getGame(command.getGameID());
+        GameData newGame = oldGame;
+        if(playerColor.equals("White")){
+            newGame = new GameData(oldGame.gameID(), null, oldGame.blackUsername(),
+                    oldGame.gameName(), oldGame.game());
+        }else if(playerColor.equals("Black")){
+            newGame = new GameData(oldGame.gameID(), oldGame.whiteUsername(), null,
+                    oldGame.gameName(), oldGame.game());
+        }
+        leaveGameUpdate.updateGame(newGame);
         connections.broadcast(session, notification);
         connections.remove(session);
     }
@@ -115,6 +127,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }else if(checkGameEnd(changedGame).contains("Stalemate") || checkGameEnd(changedGame).contains("Checkmate")) {
             // If the game has already ended
             connections.sendMessage(session, new ErrorMessage("Error: The game has already ended. You cannot make a move"));
+        }else if(changedGame.getTeamTurn() == null){
+            // If a player has already resigned
+            connections.sendMessage(session, new ErrorMessage("Error: A player has already resigned"));
         }else{
             if (changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)) {
                 // If the move is actually valid, carry it out and return the new game
@@ -154,16 +169,27 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    public void resign(Session session, String username, UserGameCommand command) throws ResponseException {
+    public void resign(Session session, String username, UserGameCommand command) throws ResponseException, IOException {
+        ChessGame resignedGame = getGame(command.getGameID());
+        String playerColor = getPlayerColor(username, command.getGameID());
+        if(authenticate(command.getAuthToken())){
+            connections.sendMessage(session, new ErrorMessage("Error: You are not authorized"));
+        }else if(resignedGame.getTeamTurn() == RESIGNED){
+            connections.sendMessage(session, new ErrorMessage("Error: The other user has already resigned"));
+        }else if(playerColor.equals("Observer")){
+            connections.sendMessage(session, new ErrorMessage("Error: Observers cannot resign"));
+        }
+        else{
+            SQLGameAccess resignedGameUpdater = new SQLGameAccess();
+            resignedGame.setTeamTurn(RESIGNED);
+            GameData oldResignedGame = resignedGameUpdater.getGame(command.getGameID());
+            GameData newResignedGame = new GameData(oldResignedGame.gameID(), oldResignedGame.whiteUsername(),
+                    oldResignedGame.blackUsername(), oldResignedGame.gameName(), resignedGame);
+            resignedGameUpdater.updateGame(newResignedGame);
 
-        // TESTS SAY THAT THIS PASSED BUT IT HAS NOT ACTUALLY PASSED YET. IT DOES NOT ACTUALLY END A GAME OR PREVENT MOVES
-
-        try {
-            String resignMessage = username + "resigned";
-            var notification = new NotificationMessage(resignMessage);
-            connections.broadcast(null, notification);
-        } catch (Exception ex) {
-            throw new ResponseException("Error: Unexpected Values");
+            String resignMessage = String.format("%s has resigned the game!", username);
+            connections.sendMessage(session, new NotificationMessage(resignMessage));
+            connections.broadcast(session, new NotificationMessage(resignMessage));
         }
     }
 
@@ -183,7 +209,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private boolean authenticate(String authToken) throws ResponseException {
         SQLAuthTokenAccess authenticator = new SQLAuthTokenAccess();
-        return authenticator.getAuth(authToken) != null;
+        return authenticator.getAuth(authToken) == null;
     }
 
     private List<String> checkGameEnd(ChessGame game){
@@ -208,7 +234,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }else if(Objects.equals(retrievedGame.whiteUsername(), username)){
             return "White";
         }else{
-            return "";
+            return "Observer";
         }
     }
 }
