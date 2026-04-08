@@ -1,6 +1,8 @@
 package server;
 
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
 import exception.*;
@@ -10,7 +12,7 @@ import io.javalin.websocket.WsConnectContext;
 import io.javalin.websocket.WsConnectHandler;
 import io.javalin.websocket.WsMessageContext;
 import io.javalin.websocket.WsMessageHandler;
-import model.AuthData;
+import model.*;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.*;
@@ -30,7 +32,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     @Override
     public void handleMessage(WsMessageContext wsMessageContext) throws Exception {
-        int gameId = -1;
         Session session = wsMessageContext.session;
 
         try {
@@ -40,7 +41,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
+                case MAKE_MOVE -> makeMove(session, username, Serializer.fromJson(wsMessageContext.message(), MakeMoveCommand.class));
                 case LEAVE -> leaveGame(session, username, command);
                 case RESIGN -> resign(session, username, command);
             }
@@ -54,19 +55,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
-        connections.add(command.getGameID(), session);
+        var temp = getGame(command.getGameID());
+        if(temp == null){
+            connections.sendMessage(session, new ErrorMessage("Error: Invalid GameID"));
+        }else {
+            connections.add(command.getGameID(), session);
+            // If a player joined, include color. If observer, don't
+            var message = String.format("%s joined as COLOR", username);
+            var notification = new NotificationMessage(message);
+            ChessGame requestedGame = getGame(command.getGameID());
+            var loadGame = new LoadGameMessage(requestedGame);
 
-        // If a player joined, include color. If observer, don't
-        var message = String.format("%s joined as COLOR", username);
-
-        // Create 3 subclasses of ServerMessage. Instantiate those here and then send those as the message from connections
-        // Error and notification have a string, Load_game has a game object it sends
-        var notification = new NotificationMessage(message);
-        ChessGame requestedGame = getGame(command.getGameID());
-        var loadGame = new LoadGameMessage(requestedGame);
-
-        connections.broadcast(session, notification);
-        connections.sendMessage(session, loadGame);
+            connections.broadcast(session, notification);
+            connections.sendMessage(session, loadGame);
+        }
     }
 
     private void leaveGame(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
@@ -76,15 +78,29 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.remove(session);
     }
 
-    public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException {
+    public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException, IOException, InvalidMoveException {
 
         // When the move is received, update the game with the made move and send the notification
+        ChessGame changedGame = getGame(moveCommand.getGameID());
+        ChessMove attemptedMove = moveCommand.getMove();
+        if(changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)){
+            // If the move is actually valid, carry it out and return the new game
+            changedGame.makeMove(attemptedMove);
+            SQLGameAccess tempAccess = new SQLGameAccess();
+            GameData oldGame = tempAccess.getGame(moveCommand.getGameID());
+            GameData updatedGame = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(),
+                    oldGame.gameName(), changedGame);
+            tempAccess.updateGame(updatedGame);
 
-        try {
-            var notification = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION);
-            connections.broadcast(null, notification);
-        } catch (Exception ex) {
-            throw new ResponseException("Test");
+            String message = String.format("%s made the move %s %s", username,
+                    attemptedMove.getStartPosition().toString(), attemptedMove.getEndPosition().toString());
+            var moveMessage = new NotificationMessage(message);
+            var game = new LoadGameMessage(changedGame);
+            connections.broadcast(session, game);
+            connections.sendMessage(session, game);
+            connections.broadcast(session, moveMessage);
+        }else{
+            throw new ResponseException("Error: Move was invalid");
         }
     }
 
@@ -109,10 +125,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private ChessGame getGame(int gameID) throws ResponseException {
         SQLGameAccess gameData = new SQLGameAccess();
-        ChessGame requestedGame = gameData.getGame(gameID).game();
-        if(requestedGame == null){
-            throw new ResponseException("Error: GameID was invalid");
-        }
-        return requestedGame;
+        return gameData.getGame(gameID).game();
     }
 }
