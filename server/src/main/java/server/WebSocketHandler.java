@@ -19,6 +19,9 @@ import websocket.commands.*;
 import websocket.messages.*;
 
 import java.io.IOException;
+import java.util.Objects;
+
+import static chess.ChessGame.TeamColor.*;
 
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
@@ -58,6 +61,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private void connect(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         var temp = getGame(command.getGameID());
         var authToken = command.getAuthToken();
+        int gameID = command.getGameID();
         String errorMessage;
         if(temp == null){
             errorMessage = "Error: Invalid GameID";
@@ -66,11 +70,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             errorMessage = "Error: Not Signed in or bad authorization";
             connections.sendMessage(session, new ErrorMessage(errorMessage));
         }else {
-            connections.add(command.getGameID(), session);
+            connections.add(gameID, session);
+
             // If a player joined, include color. If observer, don't
-            var message = String.format("%s joined as COLOR", username);
+            var message = String.format("%s joined as %s", username, getPlayerColor(username, gameID).toString());
             var notification = new NotificationMessage(message);
-            ChessGame requestedGame = getGame(command.getGameID());
+            ChessGame requestedGame = getGame(gameID);
             var loadGame = new LoadGameMessage(requestedGame);
 
             connections.broadcast(session, notification);
@@ -86,32 +91,55 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException, IOException, InvalidMoveException {
-
+        String playerColor = getPlayerColor(username, moveCommand.getGameID());
+        ChessGame.TeamColor playerTrueColor = null;
         // When the move is received, update the game with the made move and send the notification
         ChessGame changedGame = getGame(moveCommand.getGameID());
         ChessMove attemptedMove = moveCommand.getMove();
-        if(changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)){
-            // If the move is actually valid, carry it out and return the new game
-            changedGame.makeMove(attemptedMove);
-            SQLGameAccess tempAccess = new SQLGameAccess();
-            GameData oldGame = tempAccess.getGame(moveCommand.getGameID());
-            GameData updatedGame = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(),
-                    oldGame.gameName(), changedGame);
-            tempAccess.updateGame(updatedGame);
-
-            String message = String.format("%s made the move %s %s", username,
-                    attemptedMove.getStartPosition().toString(), attemptedMove.getEndPosition().toString());
-            var moveMessage = new NotificationMessage(message);
-            var game = new LoadGameMessage(changedGame);
-            connections.broadcast(session, game);
-            connections.sendMessage(session, game);
-            connections.broadcast(session, moveMessage);
+        if (playerColor.equals("White")) {
+            playerTrueColor = WHITE;
+        }else if(playerColor.equals("Black")){
+            playerTrueColor = BLACK;
+        }
+        if (playerColor.isEmpty()){
+            // If the person making a move is not a player
+            connections.sendMessage(session, new ErrorMessage("Error: You are not a player"));
+        }else if(playerTrueColor != changedGame.getBoard().getPiece(attemptedMove.getStartPosition()).getTeamColor()){
+            // If the person making a move tries to move someone else's piece
+            connections.sendMessage(session, new ErrorMessage("Error: You cannot move another player's piece"));
+        }else if(changedGame.getTeamTurn() != playerTrueColor){
+            // If it is not the player's turn
+            connections.sendMessage(session, new ErrorMessage("Error: It is not your turn"));
+        }else if(Objects.equals(checkGameEnd(changedGame), "Stalemate") || Objects.equals(checkGameEnd(changedGame), "Checkmate")) {
+            // If the game has already ended
+            connections.sendMessage(session, new ErrorMessage("Error: The game has already ended. You cannot make a move"));
         }else{
-            throw new ResponseException("Error: Move was invalid");
+            if (changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)) {
+                // If the move is actually valid, carry it out and return the new game
+                changedGame.makeMove(attemptedMove);
+                SQLGameAccess tempAccess = new SQLGameAccess();
+                GameData oldGame = tempAccess.getGame(moveCommand.getGameID());
+                GameData updatedGame = new GameData(oldGame.gameID(), oldGame.whiteUsername(), oldGame.blackUsername(),
+                        oldGame.gameName(), changedGame);
+                tempAccess.updateGame(updatedGame);
+
+                String message = String.format("%s made the move %s %s", username,
+                        attemptedMove.getStartPosition().toString(), attemptedMove.getEndPosition().toString());
+                var moveMessage = new NotificationMessage(message);
+                var game = new LoadGameMessage(changedGame);
+                connections.broadcast(session, game);
+                connections.sendMessage(session, game);
+                connections.broadcast(session, moveMessage);
+            } else {
+                throw new ResponseException("Error: Move was invalid");
+            }
         }
     }
 
     public void resign(Session session, String username, UserGameCommand command) throws ResponseException {
+
+        // TESTS SAY THAT THIS PASSED BUT IT HAS NOT ACTUALLY PASSED YET. IT DOES NOT ACTUALLY END A GAME OR PREVENT MOVES
+
         try {
             String resignMessage = username + "resigned";
             var notification = new NotificationMessage(resignMessage);
@@ -137,9 +165,28 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private boolean authenticate(String authToken) throws ResponseException {
         SQLAuthTokenAccess authenticator = new SQLAuthTokenAccess();
-        if(authenticator.getAuth(authToken) == null){
-            return false;
+        return authenticator.getAuth(authToken) != null;
+    }
+
+    private String checkGameEnd(ChessGame game){
+        if (game.isInStalemate(WHITE) || game.isInStalemate(BLACK)) {
+            return "Stalemate";
+        }else if(game.isInCheckmate(WHITE) || game.isInCheckmate(BLACK)){
+            return "Checkmate";
+        }else{
+            return "";
         }
-        return true;
+    }
+
+    private String getPlayerColor(String username, int gameID) throws ResponseException {
+        SQLGameAccess colorRetriever = new SQLGameAccess();
+        GameData retrievedGame = colorRetriever.getGame(gameID);
+        if(Objects.equals(retrievedGame.blackUsername(), username)){
+            return "Black";
+        }else if(Objects.equals(retrievedGame.whiteUsername(), username)){
+            return "White";
+        }else{
+            return "";
+        }
     }
 }
