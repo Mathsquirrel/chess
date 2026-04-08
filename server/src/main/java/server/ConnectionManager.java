@@ -24,21 +24,21 @@ public class ConnectionManager {
         connections.put(gameID, playersInGame);
     }
 
-    public void remove(Session session) {
+    public void remove(Session session, int currentGameID) {
         // Removes user from a game
         connections.forEach((gameID, values) -> {
-            values.remove(session);
+            if(currentGameID == gameID) {
+                values.remove(session);
+            }
         });
     }
 
-    public void broadcast(Session excludeSession, ServerMessage notification) throws IOException {
+    public void broadcast(Session excludeSession, ServerMessage notification, int gameID) throws IOException {
         String msg = notification.toString();
-        for (List<Session> game : connections.values()) {
-            for (Session c : game) {
-                if (c.isOpen()) {
-                    if (!c.equals(excludeSession)) {
-                        c.getRemote().sendString(msg);
-                    }
+        for (Session session : connections.get(gameID)) {
+            if (session.isOpen()) {
+                if (!session.equals(excludeSession)) {
+                    session.getRemote().sendString(msg);
                 }
             }
         }

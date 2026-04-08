@@ -80,7 +80,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ChessGame requestedGame = getGame(gameID);
             var loadGame = new LoadGameMessage(requestedGame);
 
-            connections.broadcast(session, notification);
+            connections.broadcast(session, notification, gameID);
             connections.sendMessage(session, loadGame);
         }
     }
@@ -100,8 +100,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     oldGame.gameName(), oldGame.game());
         }
         leaveGameUpdate.updateGame(newGame);
-        connections.broadcast(session, notification);
-        connections.remove(session);
+        connections.broadcast(session, notification, oldGame.gameID());
+        connections.remove(session, newGame.gameID());
     }
 
     public void makeMove(Session session, String username, MakeMoveCommand moveCommand) throws ResponseException, IOException, InvalidMoveException {
@@ -144,14 +144,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         attemptedMove.getStartPosition().toString(), attemptedMove.getEndPosition().toString());
                 var moveMessage = new NotificationMessage(message);
                 var game = new LoadGameMessage(changedGame);
-                connections.broadcast(session, game);
+                connections.broadcast(session, game, updatedGame.gameID());
                 connections.sendMessage(session, game);
-                connections.broadcast(session, moveMessage);
+                connections.broadcast(session, moveMessage, updatedGame.gameID());
                 List<String> gameState = checkGameEnd(changedGame);
                 String colorInCheckmate = "";
                 String gameEnd = "The game has ended ";
                 if(gameState.contains("Stalemate")){
-                    connections.broadcast(session, new NotificationMessage(gameEnd + "in stalemate!"));
+                    connections.broadcast(session, new NotificationMessage(gameEnd + "in stalemate!"), updatedGame.gameID());
                     connections.sendMessage(session, new NotificationMessage(gameEnd + "in stalemate!"));
                 }else if(gameState.contains("Checkmate")) {
                     if(gameState.contains("Black")){
@@ -160,7 +160,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         colorInCheckmate = "White";
                     }
                     gameEnd = String.format("%s with %s in checkmate!", gameEnd, colorInCheckmate);
-                    connections.broadcast(session, new NotificationMessage(gameEnd));
+                    connections.broadcast(session, new NotificationMessage(gameEnd), updatedGame.gameID());
                     connections.sendMessage(session, new NotificationMessage(gameEnd));
                 }
             } else {
@@ -189,7 +189,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             String resignMessage = String.format("%s has resigned the game!", username);
             connections.sendMessage(session, new NotificationMessage(resignMessage));
-            connections.broadcast(session, new NotificationMessage(resignMessage));
+            connections.broadcast(session, new NotificationMessage(resignMessage), newResignedGame.gameID());
         }
     }
 
