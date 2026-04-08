@@ -56,11 +56,13 @@ public class ChessClient implements NotificationHandler{
         switch(notification.getServerMessageType()){
             case ERROR:
             case NOTIFICATION:
+                System.out.println(notification.getServerMessage());
+                break;
             case LOAD_GAME:
-
-
+                ChessGame printedGame = new Gson().fromJson(notification.getServerMessage(), ChessGame.class);
+                PrintBoard.print(printedGame, currentColor, null);
+                break;
         }
-        System.out.println(notification.getServerMessage());
         printPrompt();
     }
 
