@@ -101,7 +101,7 @@ public class ChessClient implements NotificationHandler{
     }
 
     public String leaveGame() throws ResponseException {
-        resign();
+        ws.leaveGame(visitorAuth, currentGameID);
         return "";
     }
 
