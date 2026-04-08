@@ -46,7 +46,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case RESIGN -> resign(session, username, command);
             }
         } catch (Exception ex) {
-            connections.sendMessage(session, new ErrorMessage("Error: Malformed Message"));
+            String errorMessage = "Error: Malformed Message";
+            connections.sendMessage(session, new ErrorMessage(errorMessage));
         }
     }
     @Override
@@ -56,8 +57,14 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(Session session, String username, UserGameCommand command) throws IOException, ResponseException {
         var temp = getGame(command.getGameID());
+        var authToken = command.getAuthToken();
+        String errorMessage;
         if(temp == null){
-            connections.sendMessage(session, new ErrorMessage("Error: Invalid GameID"));
+            errorMessage = "Error: Invalid GameID";
+            connections.sendMessage(session, new ErrorMessage(errorMessage));
+        }else if(!authenticate(authToken)){
+            errorMessage = "Error: Not Signed in or bad authorization";
+            connections.sendMessage(session, new ErrorMessage(errorMessage));
         }else {
             connections.add(command.getGameID(), session);
             // If a player joined, include color. If observer, don't
@@ -126,5 +133,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     private ChessGame getGame(int gameID) throws ResponseException {
         SQLGameAccess gameData = new SQLGameAccess();
         return gameData.getGame(gameID).game();
+    }
+
+    private boolean authenticate(String authToken) throws ResponseException {
+        SQLAuthTokenAccess authenticator = new SQLAuthTokenAccess();
+        if(authenticator.getAuth(authToken) == null){
+            return false;
+        }
+        return true;
     }
 }
