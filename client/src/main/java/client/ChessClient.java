@@ -8,6 +8,7 @@ import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
+import websocket.commands.*;
 import websocket.messages.ServerMessage;
 import client.websocket.NotificationHandler;
 import java.util.*;
@@ -19,6 +20,7 @@ import static chess.ChessPiece.PieceType.*;
 public class ChessClient implements NotificationHandler{
     private String visitorName = null;
     private String visitorAuth = "";
+    private int currentGameID = 0;
     private ChessGame currentGame = null;
     private TeamColor currentColor = null;
     private final ServerFacade server;
@@ -52,7 +54,7 @@ public class ChessClient implements NotificationHandler{
     }
 
     public void notify(ServerMessage notification) {
-        // SWITCH case to handle the 3 types of messages, ERROR, LOAD_GAME, and NOTIFICATION
+        // Switch case to handle the 3 types of messages, ERROR, LOAD_GAME, and NOTIFICATION
         switch(notification.getServerMessageType()){
             case ERROR:
             case NOTIFICATION:
@@ -145,19 +147,12 @@ public class ChessClient implements NotificationHandler{
             }
         }
         ChessMove attemptedMove = new ChessMove(startPosition, endPosition, promotionPiece);
-        try {
-            currentGame.makeMove(attemptedMove);
-        } catch (InvalidMoveException e) {
-            throw new ResponseException("Error: Inputted move is impossible. Use 'highlight' command for help");
-        }
-
-        redraw();
-        return "You made the move "+ Arrays.toString(params);
-
-        // Send message to notify other user that game changed and print it
+        ws.makeMove(visitorAuth, currentGameID, attemptedMove);
+        return "";
     }
 
-    public String resign(){
+    public String resign() throws ResponseException {
+        ws.resign(visitorAuth, currentGameID);
         return "";
     }
 
@@ -276,10 +271,8 @@ public class ChessClient implements NotificationHandler{
                     currentColor = color;
                     state = INGAME;
                     PrintBoard.print(currentGame, color, null);
-
-                    // Open a connection?
-
                     ws.joinedGame(visitorAuth, game.gameID());
+                    currentGameID = game.gameID();
                     return String.format("You have joined Game %d as %s", id, playerColor);
                 }
             } catch (NumberFormatException ignored) {

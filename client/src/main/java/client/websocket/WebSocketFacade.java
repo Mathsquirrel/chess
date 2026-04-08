@@ -1,7 +1,9 @@
 package client.websocket;
 
+import chess.ChessMove;
 import com.google.gson.Gson;
 import exception.ResponseException;
+import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
@@ -53,10 +55,19 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
-    public void resigned(String visitorName) throws ResponseException {
+    public void makeMove(String authToken, int gameID, ChessMove attemptedMove) throws ResponseException {
         try {
-            var message = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME);
-            this.session.getBasicRemote().sendText(new Gson().toJson(message));
+            var makeMove = new MakeMoveCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameID, attemptedMove);
+            this.session.getBasicRemote().sendText(new Gson().toJson(makeMove));
+        } catch (IOException ex) {
+            throw new ResponseException(ex.getMessage());
+        }
+    }
+
+    public void resign(String authToken, int gameID) throws ResponseException {
+        try {
+            var resignAttempt = new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID);
+            this.session.getBasicRemote().sendText(new Gson().toJson(resignAttempt));
         } catch (IOException ex) {
             throw new ResponseException(ex.getMessage());
         }
