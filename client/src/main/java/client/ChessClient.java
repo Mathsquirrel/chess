@@ -14,8 +14,8 @@ import client.websocket.NotificationHandler;
 import java.util.*;
 
 import static chess.ChessGame.TeamColor.*;
-import static client.State.INGAME;
 import static chess.ChessPiece.PieceType.*;
+import static client.State.*;
 
 public class ChessClient implements NotificationHandler{
     private String visitorName = null;
@@ -102,6 +102,12 @@ public class ChessClient implements NotificationHandler{
 
     public String leaveGame() throws ResponseException {
         ws.leaveGame(visitorAuth, currentGameID);
+        state = SIGNEDIN;
+        return "";
+    }
+
+    public String resign() throws ResponseException {
+        ws.resign(visitorAuth, currentGameID);
         return "";
     }
 
@@ -148,11 +154,6 @@ public class ChessClient implements NotificationHandler{
         }
         ChessMove attemptedMove = new ChessMove(startPosition, endPosition, promotionPiece);
         ws.makeMove(visitorAuth, currentGameID, attemptedMove);
-        return "";
-    }
-
-    public String resign() throws ResponseException {
-        ws.resign(visitorAuth, currentGameID);
         return "";
     }
 
@@ -275,9 +276,9 @@ public class ChessClient implements NotificationHandler{
                     ws = new WebSocketFacade("http://localhost:8080", this);
                     ws.joinedGame(visitorAuth, game.gameID());
                     currentGameID = game.gameID();
-                    return String.format("You have joined Game %d as %s", id, playerColor);
+                    return "";
                 }
-            } catch (NumberFormatException ignored) {
+            } catch (Exception e) {
                 throw new ResponseException("Error: First parameter should be the Game's ID");
             }
         }
