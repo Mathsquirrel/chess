@@ -148,7 +148,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.sendMessage(session, game);
                 connections.broadcast(session, moveMessage, updatedGame.gameID());
                 List<String> gameState = checkGameEnd(changedGame);
-                String colorInCheckmate = "";
+                String colorInCheckmate;
                 String gameEnd = "The game has ended ";
                 if(gameState.contains("Stalemate")){
                     connections.broadcast(session, new NotificationMessage(gameEnd + "in stalemate!"), updatedGame.gameID());
