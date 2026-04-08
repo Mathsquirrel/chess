@@ -24,14 +24,14 @@ public class ChessClient implements NotificationHandler{
     private ChessGame currentGame = null;
     private TeamColor currentColor = null;
     private final ServerFacade server;
-    private final WebSocketFacade ws;
+    private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
     private static int[] gameNums = new int[100];
     private static final String[] rowLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
-        ws = new WebSocketFacade(serverUrl, this);
+        ws = null;
     }
 
     public void run() {
@@ -270,7 +270,9 @@ public class ChessClient implements NotificationHandler{
                     currentGame = game.chessGame().game();
                     currentColor = color;
                     state = INGAME;
-                    PrintBoard.print(currentGame, color, null);
+                    // May work without needing to explicitly call print due to websocket
+                    //PrintBoard.print(currentGame, color, null);
+                    ws = new WebSocketFacade("http://localhost:8080", this);
                     ws.joinedGame(visitorAuth, game.gameID());
                     currentGameID = game.gameID();
                     return String.format("You have joined Game %d as %s", id, playerColor);
