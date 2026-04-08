@@ -29,7 +29,7 @@ public class ChessClient implements NotificationHandler{
     private static int[] gameNums = new int[100];
     private static final String[] rowLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
 
-    public ChessClient(String serverUrl) throws ResponseException {
+    public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
         ws = null;
     }
@@ -56,12 +56,13 @@ public class ChessClient implements NotificationHandler{
     public void notify(ServerMessage notification) {
         // Switch case to handle the 3 types of messages, ERROR, LOAD_GAME, and NOTIFICATION
         switch(notification.getServerMessageType()){
-            case ERROR:
-            case NOTIFICATION:
+            case ERROR, NOTIFICATION:
                 System.out.println(notification.getServerMessage());
                 break;
             case LOAD_GAME:
                 ChessGame printedGame = new Gson().fromJson(notification.getServerMessage(), ChessGame.class);
+                currentGame = printedGame;
+                System.out.println("\n");
                 PrintBoard.print(printedGame, currentColor, null);
                 break;
         }
@@ -118,9 +119,6 @@ public class ChessClient implements NotificationHandler{
     }
 
     public String makeMove(String... params) throws ResponseException, InvalidMoveException {
-
-        // Might still need to color correct based on board
-
         if(params.length != 2){
             throw new ResponseException("Expected format: move <COLROW> <COLROW> (Ex: a7 a8->Queen) (->PIECE only needed for promotion)");
         }
@@ -129,6 +127,12 @@ public class ChessClient implements NotificationHandler{
         int[] endCoords = validateInput(params[1]);
         ChessPosition endPosition = new ChessPosition(endCoords[0], endCoords[1]);
         ChessPiece.PieceType promotionPiece = null;
+
+        // CORRECT FOR COLOR
+
+        if(currentGame.getBoard().getPiece(startPosition) == null){
+            throw new ResponseException("Error: Given start location had no piece");
+        }
         if(currentGame.getBoard().getPiece(startPosition).getPieceType() == PAWN){
             if(endPosition.getRow() == 1 || endPosition.getRow() == 8){
                 // If pawn would promote
@@ -236,8 +240,16 @@ public class ChessClient implements NotificationHandler{
         gameNums = new int[100];
         int numGames = 1;
         for (ListGamesData game : games.games()) {
+            String blackUsername = game.blackUsername();
+            String whiteUsername = game.whiteUsername();
+            if(blackUsername == null){
+                blackUsername = "<Available>";
+            }
+            if(whiteUsername == null){
+                whiteUsername = "<Available>";
+            }
             String oneData = numGames + " " + game.gameName()
-                    + " White: " + game.whiteUsername() + " Black: "+ game.blackUsername();
+                    + " White: " + whiteUsername + " Black: "+ blackUsername;
             result.append(oneData).append('\n');
             gameNums[numGames] = numGames;
             numGames ++;
@@ -279,7 +291,7 @@ public class ChessClient implements NotificationHandler{
                     return "";
                 }
             } catch (Exception e) {
-                throw new ResponseException("Error: First parameter should be the Game's ID");
+                throw new ResponseException("Expected: <game id> 'WHITE' OR 'BLACK. May need to list games'");
             }
         }
         throw new ResponseException("Expected: <game id> 'WHITE' OR 'BLACK'");
@@ -290,7 +302,7 @@ public class ChessClient implements NotificationHandler{
         if (params.length == 1) {
             CreateGameRequest createAttempt = new CreateGameRequest(params[0]);
             server.createGame(createAttempt, visitorAuth);
-            return "You have successfully created a game";
+            return "You have successfully created a game\n";
         }
         throw new ResponseException("Expected: <NAME>");
     }
@@ -323,6 +335,7 @@ public class ChessClient implements NotificationHandler{
         }
         if(foundGame){
             state = INGAME;
+            currentColor = null;
             return "You have joined as an observer";
         }else{
             return "The ID you provided did not match any games";

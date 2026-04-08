@@ -29,6 +29,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private final ConnectionManager connections = new ConnectionManager();
     private final Gson Serializer = new Gson();
+    private final String[] boardLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
     @Override
     public void handleConnect(WsConnectContext ctx) {
         System.out.println("Websocket connected");
@@ -51,7 +52,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case RESIGN -> resign(session, username, command);
             }
         } catch (Exception ex) {
-            String errorMessage = "Error: Malformed Message";
+            String errorMessage = ex.getMessage();
             connections.sendMessage(session, new ErrorMessage(errorMessage));
         }
     }
@@ -127,8 +128,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }else if(checkGameEnd(changedGame).contains("Stalemate") || checkGameEnd(changedGame).contains("Checkmate")) {
             // If the game has already ended
             connections.sendMessage(session, new ErrorMessage("Error: The game has already ended. You cannot make a move"));
-        }else if(changedGame.getTeamTurn() == null){
-            // If a player has already resigned
+        }else if(changedGame.getTeamTurn() == RESIGNED){
+            // If a player has already resignedcl
             connections.sendMessage(session, new ErrorMessage("Error: A player has already resigned"));
         }else{
             if (changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)) {
@@ -140,8 +141,17 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         oldGame.gameName(), changedGame);
                 tempAccess.updateGame(updatedGame);
 
-                String message = String.format("%s made the move %s %s", username,
-                        attemptedMove.getStartPosition().toString(), attemptedMove.getEndPosition().toString());
+                String startPosition = convertToLetter(playerColor, attemptedMove.getStartPosition().getColumn(),
+                        attemptedMove.getStartPosition().getRow());
+                String endPosition = convertToLetter(playerColor, attemptedMove.getEndPosition().getColumn(),
+                        attemptedMove.getEndPosition().getRow());
+                String promotionPiece = attemptedMove.getPromotionPiece().toString();
+                String message;
+                if(promotionPiece != null){
+                    message = String.format("%s made the move %s %s->%s", username, startPosition, endPosition, promotionPiece);
+                }else {
+                    message = String.format("%s made the move %s %s", username, startPosition, endPosition);
+                }
                 var moveMessage = new NotificationMessage(message);
                 var game = new LoadGameMessage(changedGame);
                 connections.broadcast(session, game, updatedGame.gameID());
@@ -236,5 +246,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }else{
             return "Observer";
         }
+    }
+
+    private String convertToLetter(String playerColor, int col, int row){
+        String columnLetter;
+        if(Objects.equals(playerColor, "White")) {
+            columnLetter = boardLetters[col - 1];
+        }else{
+            columnLetter = boardLetters[Math.abs(8-col)];
+        }
+        return String.format("%s%d", columnLetter, row);
     }
 }
