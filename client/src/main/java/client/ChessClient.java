@@ -3,6 +3,7 @@ package client;
 import chess.*;
 import chess.ChessGame.TeamColor;
 import client.websocket.WebSocketFacade;
+import com.google.gson.Gson;
 import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
@@ -52,6 +53,13 @@ public class ChessClient implements NotificationHandler{
 
     public void notify(ServerMessage notification) {
         // SWITCH case to handle the 3 types of messages, ERROR, LOAD_GAME, and NOTIFICATION
+        switch(notification.getServerMessageType()){
+            case ERROR:
+            case NOTIFICATION:
+            case LOAD_GAME:
+
+
+        }
         System.out.println(notification.getServerMessage());
         printPrompt();
     }
@@ -140,7 +148,7 @@ public class ChessClient implements NotificationHandler{
         } catch (InvalidMoveException e) {
             throw new ResponseException("Error: Inputted move is impossible. Use 'highlight' command for help");
         }
-        // Need to update game in server here
+
         redraw();
         return "You made the move "+ Arrays.toString(params);
 
