@@ -142,18 +142,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         oldGame.gameName(), changedGame);
                 tempAccess.updateGame(updatedGame);
 
-                String startPosition = convertToLetter(attemptedMove.getStartPosition().getColumn(),
-                        attemptedMove.getStartPosition().getRow());
-                String endPosition = convertToLetter(attemptedMove.getEndPosition().getColumn(),
-                        attemptedMove.getEndPosition().getRow());
-                ChessPiece.PieceType promotionPiece = attemptedMove.getPromotionPiece();
-                String message;
-                if(promotionPiece != null){
-                    message = String.format("%s made the move %s %s->%s", username, startPosition, endPosition, promotionPiece);
-                }else {
-                    message = String.format("%s made the move %s %s", username, startPosition, endPosition);
-                }
-                var moveMessage = new NotificationMessage(message);
+                var moveMessage = getNotificationMessage(username, attemptedMove);
                 var game = new LoadGameMessage(changedGame);
                 connections.broadcast(session, game, updatedGame.gameID());
                 connections.sendMessage(session, game);
@@ -186,6 +175,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 throw new ResponseException("Error: Move was invalid");
             }
         }
+    }
+
+    @NotNull
+    private NotificationMessage getNotificationMessage(String username, ChessMove attemptedMove) {
+        String startPosition = convertToLetter(attemptedMove.getStartPosition().getColumn(),
+                attemptedMove.getStartPosition().getRow());
+        String endPosition = convertToLetter(attemptedMove.getEndPosition().getColumn(),
+                attemptedMove.getEndPosition().getRow());
+        ChessPiece.PieceType promotionPiece = attemptedMove.getPromotionPiece();
+        String message;
+        if(promotionPiece != null){
+            message = String.format("%s made the move %s %s->%s", username, startPosition, endPosition, promotionPiece);
+        }else {
+            message = String.format("%s made the move %s %s", username, startPosition, endPosition);
+        }
+        return new NotificationMessage(message);
     }
 
     public void resign(Session session, String username, UserGameCommand command) throws ResponseException, IOException {
