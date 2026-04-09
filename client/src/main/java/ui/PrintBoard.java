@@ -145,7 +145,7 @@ public class PrintBoard {
                     if(colorCorrector == 0){
                         tempCorrector = 7;
                     }
-                    ChessPiece currentPiece = game.getBoard().getBoardState()[Math.abs(tempCorrector-rowNum)][Math.abs(colorCorrector -boardCol)];
+                    ChessPiece currentPiece = game.getBoard().getBoardState()[Math.abs(tempCorrector-rowNum)][Math.abs((colorCorrector) - boardCol)];
 
                     if(currentPiece == null) {
 
@@ -195,16 +195,30 @@ public class PrintBoard {
         if(colorCorrector == 7){
             tempCorrector = 0;
         }
-        if(allHighlightSquares.contains(new ChessPosition(Math.abs((row + 1) - tempCorrector), col + 1))){
-            if(Objects.equals(color, SET_BG_COLOR_LIGHT_GREY)){
-                return HIGHLIGHT_LIGHT;
-            }else{
-                return HIGHLIGHT_DARK;
+        if(colorCorrector == 0){
+            if(allHighlightSquares.contains(new ChessPosition(Math.abs((row + 1) - tempCorrector), Math.abs((col - colorCorrector) + 1)))){
+                if(Objects.equals(color, SET_BG_COLOR_LIGHT_GREY)){
+                    return HIGHLIGHT_LIGHT;
+                }else{
+                    return HIGHLIGHT_DARK;
+                }
+            }
+            if(new ChessPosition(Math.abs((row + 1) - tempCorrector), Math.abs((col - colorCorrector) + 1)).equals(highlightPiece)){
+                return SET_BG_COLOR_RED;
+            }
+        }else{
+            if(allHighlightSquares.contains(new ChessPosition(Math.abs((row + 1) - tempCorrector), Math.abs((col - (colorCorrector + 1)))))){
+                if(Objects.equals(color, SET_BG_COLOR_LIGHT_GREY)){
+                    return HIGHLIGHT_LIGHT;
+                }else{
+                    return HIGHLIGHT_DARK;
+                }
+            }
+            if(new ChessPosition(Math.abs((row + 1) - tempCorrector), Math.abs((col - (colorCorrector + 1)))).equals(highlightPiece)){
+                return SET_BG_COLOR_RED;
             }
         }
-        if(new ChessPosition(Math.abs((row + 1) - tempCorrector), col + 1).equals(highlightPiece)){
-            return SET_BG_COLOR_RED;
-        }
+
         return color;
     }
 

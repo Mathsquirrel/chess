@@ -2,6 +2,7 @@ package server;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
@@ -129,7 +130,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             // If the game has already ended
             connections.sendMessage(session, new ErrorMessage("Error: The game has already ended. You cannot make a move"));
         }else if(changedGame.getTeamTurn() == RESIGNED){
-            // If a player has already resignedcl
+            // If a player has already resigned
             connections.sendMessage(session, new ErrorMessage("Error: A player has already resigned"));
         }else{
             if (changedGame.validMoves(attemptedMove.getStartPosition()).contains(attemptedMove)) {
@@ -141,11 +142,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                         oldGame.gameName(), changedGame);
                 tempAccess.updateGame(updatedGame);
 
-                String startPosition = convertToLetter(playerColor, attemptedMove.getStartPosition().getColumn(),
+                String startPosition = convertToLetter(attemptedMove.getStartPosition().getColumn(),
                         attemptedMove.getStartPosition().getRow());
-                String endPosition = convertToLetter(playerColor, attemptedMove.getEndPosition().getColumn(),
+                String endPosition = convertToLetter(attemptedMove.getEndPosition().getColumn(),
                         attemptedMove.getEndPosition().getRow());
-                String promotionPiece = attemptedMove.getPromotionPiece().toString();
+                ChessPiece.PieceType promotionPiece = attemptedMove.getPromotionPiece();
                 String message;
                 if(promotionPiece != null){
                     message = String.format("%s made the move %s %s->%s", username, startPosition, endPosition, promotionPiece);
@@ -248,13 +249,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private String convertToLetter(String playerColor, int col, int row){
-        String columnLetter;
-        if(Objects.equals(playerColor, "White")) {
-            columnLetter = boardLetters[col - 1];
-        }else{
-            columnLetter = boardLetters[Math.abs(8-col)];
-        }
+    private String convertToLetter(int col, int row){
+        String columnLetter = boardLetters[col -1];
         return String.format("%s%d", columnLetter, row);
     }
 }

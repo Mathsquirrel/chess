@@ -108,6 +108,9 @@ public class ChessClient implements NotificationHandler{
     }
 
     public String resign() throws ResponseException {
+        if(currentGame.isInCheckmate(WHITE) || currentGame.isInCheckmate(BLACK)){
+            return "Error: The game has already ended in checkmate";
+        }
         ws.resign(visitorAuth, currentGameID);
         return "";
     }
@@ -123,18 +126,18 @@ public class ChessClient implements NotificationHandler{
             throw new ResponseException("Expected format: move <COLROW> <COLROW> (Ex: a7 a8->Queen) (->PIECE only needed for promotion)");
         }
         int[] startCoords = validateInput(params[0]);
-        ChessPosition startPosition = new ChessPosition(startCoords[0], startCoords[1]);
+        ChessPosition startPosition = new ChessPosition(Math.abs(startCoords[0]), Math.abs(startCoords[1]));
         int[] endCoords = validateInput(params[1]);
-        ChessPosition endPosition = new ChessPosition(endCoords[0], endCoords[1]);
+        ChessPosition endPosition = new ChessPosition(Math.abs(endCoords[0]), Math.abs(endCoords[1]));
         ChessPiece.PieceType promotionPiece = null;
-
         // CORRECT FOR COLOR
 
         if(currentGame.getBoard().getPiece(startPosition) == null){
             throw new ResponseException("Error: Given start location had no piece");
         }
         if(currentGame.getBoard().getPiece(startPosition).getPieceType() == PAWN){
-            if(endPosition.getRow() == 1 || endPosition.getRow() == 8){
+            if((endPosition.getRow() == 1 && currentColor == BLACK) ||
+                    (endPosition.getRow() == 8 && currentColor == WHITE)){
                 // If pawn would promote
                 if(params[1].length() == 2){
                     throw new ResponseException("Error: Pawn will promote. Should include ->PIECE");
@@ -161,11 +164,15 @@ public class ChessClient implements NotificationHandler{
         return "";
     }
 
+
+    // STILL HAVING HIGHLIGHT ISSUES. FOR BLACK, HIGHLIGHTS MOVEMENT OF PIECE TO RIGHT OF CHOSEN PIECE
+    // ALSO, NO SERVER MESSAGE WHEN IN CHECK
+
     public String highlight(String... params) throws ResponseException {
-        int[] coords = validateInput(params);
-        int row = coords[0];
-        int col = coords[1];
         if(params.length == 1) {
+            int[] coords = validateInput(params);
+            int row = coords[0];
+            int col = coords[1];
             if(params[0].length() != 2){
                 throw new ResponseException("Error: Expected <COLROW> (Ex: a2)");
             }
@@ -409,9 +416,6 @@ public class ChessClient implements NotificationHandler{
         }
         int row = Integer.parseInt(coords[1]);
         int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
-        if(currentColor == BLACK){
-            col = 9-col;
-        }
         if(row < 1 || row > 8){
             // If the row was out of bounds
             throw new ResponseException("Error: Given Row wasn't between 1 and 8");
