@@ -8,7 +8,6 @@ import model.*;
 import server.ServerFacade;
 import exception.ResponseException;
 import ui.PrintBoard;
-import websocket.commands.*;
 import websocket.messages.ServerMessage;
 import client.websocket.NotificationHandler;
 import java.util.*;
@@ -27,7 +26,7 @@ public class ChessClient implements NotificationHandler{
     private WebSocketFacade ws;
     private State state = State.SIGNEDOUT;
     private static int[] gameNums = new int[100];
-    private static final String[] rowLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
+    private static final String[] ROW_LETTERS = {"a", "b", "c", "d", "e", "f", "g", "h"};
 
     public ChessClient(String serverUrl) {
         server = new ServerFacade(serverUrl);
@@ -130,8 +129,6 @@ public class ChessClient implements NotificationHandler{
         int[] endCoords = validateInput(params[1]);
         ChessPosition endPosition = new ChessPosition(Math.abs(endCoords[0]), Math.abs(endCoords[1]));
         ChessPiece.PieceType promotionPiece = null;
-        // CORRECT FOR COLOR
-
         if(currentGame.getBoard().getPiece(startPosition) == null){
             throw new ResponseException("Error: Given start location had no piece");
         }
@@ -163,10 +160,6 @@ public class ChessClient implements NotificationHandler{
         ws.makeMove(visitorAuth, currentGameID, attemptedMove);
         return "";
     }
-
-
-    // STILL HAVING HIGHLIGHT ISSUES. FOR BLACK, HIGHLIGHTS MOVEMENT OF PIECE TO RIGHT OF CHOSEN PIECE
-    // ALSO, NO SERVER MESSAGE WHEN IN CHECK
 
     public String highlight(String... params) throws ResponseException {
         if(params.length == 1) {
@@ -410,12 +403,12 @@ public class ChessClient implements NotificationHandler{
         String[] coords = new String[2];
         coords[0] = params[0].substring(0,1);
         coords[1] = params[0].substring(1,2);
-        if(!Arrays.asList(rowLetters).contains(coords[0]) || !coords[1].matches("\\d+")){
+        if(!Arrays.asList(ROW_LETTERS).contains(coords[0]) || !coords[1].matches("\\d+")){
             // If column isn't an actual column letter or the row isn't a number
             throw new ResponseException("Error: Col wasn't an expected letter or Row wasn't a number");
         }
         int row = Integer.parseInt(coords[1]);
-        int col = Arrays.asList(rowLetters).indexOf(coords[0]) + 1;
+        int col = Arrays.asList(ROW_LETTERS).indexOf(coords[0]) + 1;
         if(row < 1 || row > 8){
             // If the row was out of bounds
             throw new ResponseException("Error: Given Row wasn't between 1 and 8");

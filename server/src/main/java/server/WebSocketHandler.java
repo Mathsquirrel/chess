@@ -29,7 +29,7 @@ import static chess.ChessGame.TeamColor.*;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
-    private final Gson Serializer = new Gson();
+    private final Gson serializer = new Gson();
     private final String[] boardLetters = {"a", "b", "c", "d", "e", "f", "g", "h"};
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -42,13 +42,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         Session session = wsMessageContext.session;
 
         try {
-            UserGameCommand command = Serializer.fromJson(
+            UserGameCommand command = serializer.fromJson(
                     wsMessageContext.message(), UserGameCommand.class);
             String username = getUsername(command.getAuthToken());
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, username, command);
-                case MAKE_MOVE -> makeMove(session, username, Serializer.fromJson(wsMessageContext.message(), MakeMoveCommand.class));
+                case MAKE_MOVE -> makeMove(session, username, serializer.fromJson(wsMessageContext.message(), MakeMoveCommand.class));
                 case LEAVE -> leaveGame(session, username, command);
                 case RESIGN -> resign(session, username, command);
             }
