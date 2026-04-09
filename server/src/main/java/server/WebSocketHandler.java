@@ -158,6 +158,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 connections.broadcast(session, game, updatedGame.gameID());
                 connections.sendMessage(session, game);
                 connections.broadcast(session, moveMessage, updatedGame.gameID());
+
+                // Check for additional messages
                 List<String> gameState = checkGameEnd(changedGame);
                 String colorInCheckmate;
                 String gameEnd = "The game has ended ";
@@ -173,6 +175,12 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     gameEnd = String.format("%s with %s in checkmate!", gameEnd, colorInCheckmate);
                     connections.broadcast(session, new NotificationMessage(gameEnd), updatedGame.gameID());
                     connections.sendMessage(session, new NotificationMessage(gameEnd));
+                }else if(changedGame.isInCheck(WHITE)){
+                    connections.broadcast(session, new NotificationMessage("White is in Check!"), updatedGame.gameID());
+                    connections.sendMessage(session, new NotificationMessage("White is in Check!"));
+                }else if(changedGame.isInCheck(BLACK)){
+                    connections.broadcast(session, new NotificationMessage("Black is in Check!"), updatedGame.gameID());
+                    connections.sendMessage(session, new NotificationMessage("Black is in Check!"));
                 }
             } else {
                 throw new ResponseException("Error: Move was invalid");
